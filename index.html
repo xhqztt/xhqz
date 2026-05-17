@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>考研打卡 · 贸大应用经济学</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+
+<!-- PWA Manifest -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2d5a8e">
+<meta name="mobile-web-app-capable" content="yes">
+
+<!-- iOS PWA support -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="考研打卡">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+<!-- Icons -->
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<style>
+:root {
+  --bg: #f7f5f0;
+  --surface: #ffffff;
+  --surface2: #f0ede6;
+  --border: #e2ddd6;
+  --text: #1a1714;
+  --text2: #6b6560;
+  --text3: #9e9891;
+  --accent: #2d5a8e;
+  --accent-light: #e8eff7;
+  --green: #2d7a4f;
+  --green-light: #e8f5ee;
+  --amber: #8a5c1a;
+  --amber-light: #fdf3e3;
+  --purple: #5a3d8a;
+  --purple-light: #f0ecf8;
+  --red: #8a2d2d;
+  --red-light: #f8ecec;
+  --gray: #5a5550;
+  --tomato: #c0392b;
+  --tomato-light: #fdf0ee;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans SC',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;line-height:1.6}
+
+/* ===== TAB NAV ===== */
+.tab-nav{background:var(--surface);border-bottom:1px solid var(--border);display:flex;position:sticky;top:0;z-index:200}
+.tab-btn{flex:1;padding:14px 8px;border:none;background:none;font-family:'Noto Sans SC',sans-serif;font-size:14px;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:color .15s,border-color .15s}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:500}
+.tab-btn:hover{color:var(--text)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+
+/* ===== HEADER (plan page) ===== */
+.plan-header{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 20px}
+.plan-header-inner{max-width:760px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.app-title{font-family:'Noto Serif SC',serif;font-size:15px;font-weight:600;white-space:nowrap}
+.app-title span{color:var(--accent)}
+.phase-pill{font-size:11px;padding:3px 10px;border-radius:20px;background:var(--accent-light);color:var(--accent);font-weight:500;white-space:nowrap}
+
+/* Date nav */
+.date-nav-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px}
+.date-nav-inner{max-width:760px;margin:0 auto}
+.date-nav-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.nav-btn{background:none;border:1px solid var(--border);border-radius:var(--radius-sm);padding:7px 16px;cursor:pointer;color:var(--text);font-size:13px;font-family:'Noto Sans SC',sans-serif;transition:background .15s}
+.nav-btn:hover{background:var(--surface2)}
+.date-label{font-family:'Noto Serif SC',serif;font-size:16px;font-weight:600;text-align:center;flex:1}
+
+/* Week strip */
+.week-strip{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.week-cell{border:1px solid var(--border);border-radius:var(--radius-sm);padding:5px 3px;text-align:center;cursor:pointer;transition:background .15s;background:var(--surface)}
+.week-cell:hover{background:var(--surface2)}
+.week-cell.active{border-color:var(--accent);background:var(--accent-light)}
+.wc-day{font-size:10px;color:var(--text3);margin-bottom:1px}
+.wc-date{font-size:12px;font-weight:500}
+.wc-dot{width:5px;height:5px;border-radius:50%;margin:3px auto 0;background:transparent}
+.wc-dot.partial{background:var(--amber)}.wc-dot.full{background:var(--green)}
+
+/* Stats */
+.stats-section{max-width:760px;margin:14px auto;padding:0 20px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px;text-align:center}
+.stat-num{font-family:'Noto Serif SC',serif;font-size:20px;font-weight:600}
+.stat-lbl{font-size:11px;color:var(--text3);margin-top:1px}
+
+/* Progress */
+.progress-section{max-width:760px;margin:0 auto 14px;padding:0 20px;display:flex;align-items:center;gap:12px}
+.prog-track{flex:1;background:var(--surface2);border-radius:20px;height:7px;overflow:hidden}
+.prog-bar{height:7px;border-radius:20px;background:var(--accent);transition:width .4s ease}
+.prog-bar.complete{background:var(--green)}
+.prog-lbl{font-size:12px;color:var(--text3);white-space:nowrap;min-width:44px;text-align:right}
+
+/* Tasks */
+.tasks-section{max-width:760px;margin:0 auto;padding:0 20px 80px}
+.time-block{margin-bottom:14px}
+.time-header{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.subj-tag{font-size:11px;font-weight:500;padding:2px 9px;border-radius:20px}
+.tag-math{background:var(--amber-light);color:var(--amber)}
+.tag-eng{background:var(--green-light);color:var(--green)}
+.tag-pro{background:var(--purple-light);color:var(--purple)}
+.tag-pol{background:var(--accent-light);color:var(--accent)}
+.tag-thesis{background:var(--red-light);color:var(--red)}
+.tag-misc{background:var(--surface2);color:var(--gray)}
+.time-range{font-size:12px;color:var(--text3)}
+
+.task-item{display:flex;align-items:flex-start;gap:10px;padding:10px 13px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;margin-bottom:5px;transition:background .12s;-webkit-tap-highlight-color:transparent;user-select:none}
+.task-item:hover{background:var(--surface2)}
+.task-item.done{opacity:.42}
+.task-item.done .task-text{text-decoration:line-through;color:var(--text3)}
+.task-item:last-child{margin-bottom:0}
+.cb{width:17px;height:17px;border:1.5px solid var(--border);border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:2px;transition:background .15s,border-color .15s;font-size:11px;color:#fff}
+.cb.on{background:var(--accent);border-color:var(--accent)}
+.task-content{flex:1;min-width:0}
+.task-text{font-size:13px;color:var(--text);line-height:1.5}
+.task-note{font-size:11px;color:var(--text3);margin-top:2px;line-height:1.4}
+
+/* Timer button on task */
+.task-timer-btn{flex-shrink:0;background:none;border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-size:11px;color:var(--text3);cursor:pointer;transition:background .12s,color .12s;white-space:nowrap;margin-top:1px}
+.task-timer-btn:hover{background:var(--tomato-light);color:var(--tomato);border-color:var(--tomato)}
+.task-timer-btn.running{background:var(--tomato-light);color:var(--tomato);border-color:var(--tomato)}
+
+/* ===== TOMATO PAGE ===== */
+.tomato-page{max-width:480px;margin:0 auto;padding:24px 20px 80px}
+
+.tomato-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px 24px;text-align:center;margin-bottom:16px}
+
+.tomato-label{font-size:12px;color:var(--text3);margin-bottom:8px;min-height:18px}
+.tomato-task-name{font-family:'Noto Serif SC',serif;font-size:15px;font-weight:600;color:var(--text);margin-bottom:20px;min-height:24px;line-height:1.4}
+
+/* Ring */
+.ring-wrap{position:relative;width:180px;height:180px;margin:0 auto 24px}
+.ring-svg{transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:var(--surface2);stroke-width:10}
+.ring-fg{fill:none;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset .5s ease,stroke .3s}
+.ring-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-time{font-family:'Noto Serif SC',serif;font-size:36px;font-weight:600;color:var(--text);line-height:1}
+.ring-mode{font-size:11px;color:var(--text3);margin-top:4px}
+
+/* Controls */
+.tomato-controls{display:flex;gap:10px;justify-content:center;margin-bottom:20px}
+.ctrl-btn{border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 22px;font-size:14px;font-family:'Noto Sans SC',sans-serif;cursor:pointer;transition:background .15s,border-color .15s;background:var(--surface);color:var(--text)}
+.ctrl-btn:hover{background:var(--surface2)}
+.ctrl-btn.primary{background:var(--tomato);border-color:var(--tomato);color:#fff}
+.ctrl-btn.primary:hover{background:#a93226}
+
+/* Mode select */
+.mode-row{display:flex;gap:6px;justify-content:center;margin-bottom:0}
+.mode-btn{flex:1;max-width:120px;padding:7px 4px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;font-family:'Noto Sans SC',sans-serif;cursor:pointer;background:var(--surface);color:var(--text3);transition:background .15s,border-color .15s}
+.mode-btn.active{background:var(--accent-light);border-color:var(--accent);color:var(--accent);font-weight:500}
+
+/* Settings */
+.tomato-settings{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-bottom:16px}
+.settings-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:12px}
+.setting-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.setting-row:last-child{margin-bottom:0}
+.setting-lbl{font-size:13px;color:var(--text2)}
+.setting-val{display:flex;align-items:center;gap:8px}
+.inc-btn{width:26px;height:26px;border:1px solid var(--border);border-radius:6px;background:var(--surface);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--text);transition:background .12s}
+.inc-btn:hover{background:var(--surface2)}
+.setting-num{font-size:14px;font-weight:500;min-width:28px;text-align:center}
+
+/* Today's tomatoes */
+.tomato-log{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px}
+.log-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+.log-clear{font-size:11px;color:var(--text3);cursor:pointer;background:none;border:none;font-family:'Noto Sans SC',sans-serif}
+.log-clear:hover{color:var(--red)}
+.log-empty{font-size:13px;color:var(--text3);text-align:center;padding:16px 0}
+.log-item{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)}
+.log-item:last-child{border-bottom:none}
+.log-tomato{font-size:16px}
+.log-info{flex:1;min-width:0}
+.log-name{font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.log-time{font-size:11px;color:var(--text3)}
+.log-dur{font-size:12px;color:var(--text3);white-space:nowrap}
+
+/* Bottom nav mobile */
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:8px 20px;padding-bottom:max(8px,env(safe-area-inset-bottom));justify-content:center;gap:12px;z-index:150}
+.bnav-btn{background:none;border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 24px;font-size:14px;cursor:pointer;font-family:'Noto Sans SC',sans-serif;color:var(--text);transition:background .15s}
+.bnav-btn:hover{background:var(--surface2)}
+
+/* Notification badge */
+.notif-badge{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--tomato);margin-left:5px;vertical-align:middle}
+
+@media(max-width:600px){
+  .stats-section{grid-template-columns:repeat(2,1fr)}
+  .date-label{font-size:14px}
+  .stat-num{font-size:18px}
+  .nav-btn{padding:6px 10px;font-size:12px}
+  .bottom-nav{display:flex}
+  body{padding-bottom:0}
+  .tasks-section{padding-bottom:80px}
+  .tomato-page{padding-bottom:80px}
+  .ring-wrap{width:160px;height:160px}
+  .ring-time{font-size:30px}
+}
+
+/* ===== STATS PAGE ===== */
+.stats-page{max-width:760px;margin:0 auto;padding:20px 20px 80px}
+.stats-period-row{display:flex;gap:6px;margin-bottom:18px}
+.period-btn{flex:1;padding:8px 4px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:'Noto Sans SC',sans-serif;cursor:pointer;background:var(--surface);color:var(--text3);transition:background .15s,border-color .15s}
+.period-btn.active{background:var(--accent-light);border-color:var(--accent);color:var(--accent);font-weight:500}
+.stats-summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:18px}
+.ss-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px;text-align:center}
+.ss-num{font-family:'Noto Serif SC',serif;font-size:22px;font-weight:600;color:var(--text)}
+.ss-lbl{font-size:11px;color:var(--text3);margin-top:2px}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 16px 12px;margin-bottom:14px}
+.chart-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:14px}
+.bar-chart{display:flex;align-items:flex-end;gap:4px;height:100px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+.bar-fill{width:100%;border-radius:4px 4px 0 0;background:var(--tomato);opacity:0.8;min-height:2px;transition:height .3s}
+.bar-fill.zero{opacity:0.15;min-height:3px}
+.bar-fill.today{opacity:1;background:var(--accent)}
+.bar-lbl{font-size:9px;color:var(--text3);text-align:center;white-space:nowrap}
+.bar-val{font-size:9px;color:var(--text2);font-weight:500}
+.heatmap-wrap{overflow-x:auto;padding-bottom:4px}
+.heatmap-grid{display:grid;gap:3px}
+.hm-cell{width:14px;height:14px;border-radius:2px;cursor:default}
+.hm-legend{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:11px;color:var(--text3)}
+.hm-swatch{width:11px;height:11px;border-radius:2px}
+.subject-bars{display:flex;flex-direction:column;gap:8px}
+.subj-bar-row{display:flex;align-items:center;gap:10px}
+.subj-bar-name{font-size:12px;color:var(--text2);min-width:72px;flex-shrink:0}
+.subj-bar-track{flex:1;background:var(--surface2);border-radius:20px;height:8px;overflow:hidden}
+.subj-bar-fill{height:8px;border-radius:20px;transition:width .4s}
+.subj-bar-val{font-size:11px;color:var(--text3);min-width:40px;text-align:right}
+.streak-row{display:flex;gap:8px;margin-bottom:14px}
+.streak-card{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;text-align:center}
+.streak-num{font-family:'Noto Serif SC',serif;font-size:28px;font-weight:600;color:var(--tomato)}
+.streak-lbl{font-size:12px;color:var(--text3);margin-top:2px}
+@media(max-width:600px){
+  .stats-summary-grid{grid-template-columns:repeat(2,1fr)}
+  .ss-num{font-size:18px}
+  .streak-num{font-size:22px}
+  .bar-chart{height:80px}
+  .hm-cell{width:11px;height:11px}
+}
+
+/* Countdown */
+.header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.countdown{font-family:'Noto Serif SC',serif;font-size:13px;font-weight:600;color:var(--tomato);background:var(--tomato-light);padding:4px 11px;border-radius:20px;white-space:nowrap}
+.countdown.urgent{background:var(--tomato);color:#fff}
+
+/* Subject-colored timer buttons */
+.task-timer-btn.subj-math{color:var(--amber);border-color:var(--amber-light)}
+.task-timer-btn.subj-math:hover{background:var(--amber-light);border-color:var(--amber)}
+.task-timer-btn.subj-eng{color:var(--green);border-color:var(--green-light)}
+.task-timer-btn.subj-eng:hover{background:var(--green-light);border-color:var(--green)}
+.task-timer-btn.subj-pro{color:var(--purple);border-color:var(--purple-light)}
+.task-timer-btn.subj-pro:hover{background:var(--purple-light);border-color:var(--purple)}
+.task-timer-btn.subj-pol{color:var(--accent);border-color:var(--accent-light)}
+.task-timer-btn.subj-pol:hover{background:var(--accent-light);border-color:var(--accent)}
+.task-timer-btn.subj-thesis{color:var(--red);border-color:var(--red-light)}
+.task-timer-btn.subj-thesis:hover{background:var(--red-light);border-color:var(--red)}
+.task-timer-btn.subj-misc{color:var(--gray);border-color:var(--border)}
+.task-timer-btn.subj-misc:hover{background:var(--surface2);border-color:var(--text3)}
+.task-timer-btn .timer-dur{font-size:10px;opacity:0.7;margin-left:3px}
+
+/* Subject duration settings in tomato page */
+.subj-dur-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px}
+.subj-dur-cell{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface)}
+.subj-dur-lbl{font-size:12px;display:flex;align-items:center;gap:6px}
+.subj-dur-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.subj-dur-val{display:flex;align-items:center;gap:4px}
+.subj-dur-num{font-size:12px;font-weight:500;min-width:20px;text-align:center}
+.sd-inc{width:22px;height:22px;border:1px solid var(--border);border-radius:5px;background:var(--surface);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;color:var(--text)}
+.sd-inc:hover{background:var(--surface2)}
+
+/* Ring color by subject */
+.ring-fg.s-math{stroke:#EF9F27}
+.ring-fg.s-eng{stroke:#2d7a4f}
+.ring-fg.s-pro{stroke:#7F77DD}
+.ring-fg.s-pol{stroke:#2d5a8e}
+.ring-fg.s-thesis{stroke:#c0392b}
+.ring-fg.s-misc{stroke:#888780}
+
+/* Backup section */
+.backup-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-top:14px}
+.backup-title{font-size:13px;font-weight:500;margin-bottom:6px}
+.backup-desc{font-size:11px;color:var(--text3);margin-bottom:12px;line-height:1.5}
+.backup-row{display:flex;gap:8px;flex-wrap:wrap}
+.backup-btn{flex:1;min-width:100px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);font-size:12px;font-family:'Noto Sans SC',sans-serif;cursor:pointer;color:var(--text);transition:background .15s}
+.backup-btn:hover{background:var(--surface2)}
+.backup-btn.danger{color:var(--red)}
+.backup-btn.danger:hover{background:var(--red-light)}
+.backup-status{font-size:11px;color:var(--green);margin-top:8px;min-height:16px}
+
+@media(max-width:600px){
+  .countdown{font-size:11px;padding:3px 8px}
+  .header-right{gap:6px}
+  .app-title{font-size:13px}
+  .subj-dur-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- TAB NAV -->
+<nav class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('plan')">📋 每日打卡</button>
+  <button class="tab-btn" onclick="switchTab('tomato')" id="tomatoTabBtn">🍅 番茄钟</button>
+  <button class="tab-btn" onclick="switchTab('stats')">📊 专注统计</button>
+</nav>
+
+<!-- ====== PLAN TAB ====== -->
+<div class="tab-panel active" id="tab-plan">
+  <div class="plan-header">
+    <div class="plan-header-inner">
+      <div class="app-title">考研打卡 <span>·</span> 贸大应用经济学</div>
+      <div class="header-right">
+        <span class="countdown" id="countdown">距考试 — 天</span>
+        <span class="phase-pill" id="phaseBadge">基础阶段</span>
+      </div>
+    </div>
+  </div>
+  <div class="date-nav-bar">
+    <div class="date-nav-inner">
+      <div class="date-nav-row">
+        <button class="nav-btn" onclick="go(-1)">← 前一天</button>
+        <div class="date-label" id="dateLabel"></div>
+        <button class="nav-btn" onclick="go(1)">后一天 →</button>
+      </div>
+      <div class="week-strip" id="weekStrip"></div>
+    </div>
+  </div>
+  <div class="stats-section">
+    <div class="stat-card"><div class="stat-num" id="sDone">0</div><div class="stat-lbl">今日完成</div></div>
+    <div class="stat-card"><div class="stat-num" id="sTotal">0</div><div class="stat-lbl">今日任务</div></div>
+    <div class="stat-card"><div class="stat-num" id="sPct">0%</div><div class="stat-lbl">完成率</div></div>
+    <div class="stat-card"><div class="stat-num" id="sStreak">0</div><div class="stat-lbl">连续天数🔥</div></div>
+  </div>
+  <div class="progress-section">
+    <div class="prog-track"><div class="prog-bar" id="progBar" style="width:0%"></div></div>
+    <span class="prog-lbl" id="progLbl">0 / 0</span>
+  </div>
+  <div class="tasks-section" id="taskContainer"></div>
+  <div class="bottom-nav">
+    <button class="bnav-btn" onclick="go(-1)">← 前一天</button>
+    <button class="bnav-btn" onclick="go(1)">后一天 →</button>
+  </div>
+</div>
+
+<!-- ====== TOMATO TAB ====== -->
+<div class="tab-panel" id="tab-tomato">
+  <div class="tomato-page">
+
+    <div class="tomato-card">
+      <div class="tomato-label" id="tLabel">点击任务旁的 🍅 开始专注</div>
+      <div class="tomato-task-name" id="tTaskName">—</div>
+
+      <div class="ring-wrap">
+        <svg class="ring-svg" width="180" height="180" viewBox="0 0 180 180">
+          <circle class="ring-bg" cx="90" cy="90" r="80"/>
+          <circle class="ring-fg" id="ringFg" cx="90" cy="90" r="80"
+            stroke-dasharray="502.65" stroke-dashoffset="0" stroke="var(--tomato)"/>
+        </svg>
+        <div class="ring-text">
+          <div class="ring-time" id="ringTime">25:00</div>
+          <div class="ring-mode" id="ringMode">专注</div>
+        </div>
+      </div>
+
+      <div class="mode-row" style="margin-bottom:20px">
+        <button class="mode-btn active" id="modeWork" onclick="setMode('work')">专注 🍅</button>
+        <button class="mode-btn" id="modeShort" onclick="setMode('short')">短休息</button>
+        <button class="mode-btn" id="modeLong" onclick="setMode('long')">长休息</button>
+      </div>
+
+      <div class="tomato-controls">
+        <button class="ctrl-btn" onclick="resetTimer()">重置</button>
+        <button class="ctrl-btn primary" id="startBtn" onclick="toggleTimer()">开始</button>
+        <button class="ctrl-btn" onclick="skipTimer()">跳过</button>
+      </div>
+    </div>
+
+    <div class="tomato-settings">
+      <div class="settings-title">时长设置（分钟）</div>
+      <div class="setting-row">
+        <span class="setting-lbl">专注时长</span>
+        <div class="setting-val">
+          <button class="inc-btn" onclick="adjustSetting('work',-5)">−</button>
+          <span class="setting-num" id="setWork">25</span>
+          <button class="inc-btn" onclick="adjustSetting('work',5)">+</button>
+        </div>
+      </div>
+      <div class="setting-row">
+        <span class="setting-lbl">短休息</span>
+        <div class="setting-val">
+          <button class="inc-btn" onclick="adjustSetting('short',-1)">−</button>
+          <span class="setting-num" id="setShort">5</span>
+          <button class="inc-btn" onclick="adjustSetting('short',1)">+</button>
+        </div>
+      </div>
+      <div class="setting-row">
+        <span class="setting-lbl">长休息</span>
+        <div class="setting-val">
+          <button class="inc-btn" onclick="adjustSetting('long',-5)">−</button>
+          <span class="setting-num" id="setLong">15</span>
+          <button class="inc-btn" onclick="adjustSetting('long',5)">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="tomato-settings">
+      <div class="settings-title">各科专注时长（分钟）</div>
+      <div class="subj-dur-grid" id="subjDurGrid"></div>
+    </div>
+
+    <div class="backup-card">
+      <div class="backup-title">数据备份</div>
+      <div class="backup-desc">数据保存在浏览器本地。换设备、清缓存前请导出备份；导入会覆盖当前数据。</div>
+      <div class="backup-row">
+        <button class="backup-btn" onclick="exportData()">📥 导出备份</button>
+        <button class="backup-btn" onclick="document.getElementById('importFile').click()">📤 导入备份</button>
+        <button class="backup-btn danger" onclick="clearAll()">清空全部</button>
+      </div>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+      <div class="backup-status" id="backupStatus"></div>
+    </div>
+
+    <div class="tomato-log">
+      <div class="log-title">
+        今日番茄 <span id="logCount" style="color:var(--tomato)">0 个</span>
+        <button class="log-clear" onclick="clearLog()">清空</button>
+      </div>
+      <div id="logList"><div class="log-empty">今天还没有完成的番茄</div></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  SHARED DATA & HELPERS
+// ============================================================
+const START = new Date(2026,4,17);
+const WEEKDAYS=['日','一','二','三','四','五','六'];
+const MONTHS=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+
+function toMid(d){return new Date(d.getFullYear(),d.getMonth(),d.getDate())}
+function dayIdx(d){return Math.round((toMid(d)-toMid(START))/86400000)}
+function addDays(d,n){const r=new Date(d);r.setDate(r.getDate()+n);return r}
+function fmtDate(d){return `${d.getFullYear()}年${MONTHS[d.getMonth()]}${d.getDate()}日 周${WEEKDAYS[d.getDay()]}`}
+function fmtShort(d){return `${d.getMonth()+1}/${d.getDate()}`}
+function getPhase(i){
+  if(i<56)return '基础阶段（论文+备考并行）';
+  if(i<140)return '强化阶段';
+  if(i<196)return '冲刺阶段';
+  return '押题阶段';
+}
+
+// ============================================================
+//  COURSE DATA
+// ============================================================
+const microCh=[
+  {ch:'第1-2章',topic:'供给与需求的市场力量',note:'掌握供需曲线移动的原因，价格机制'},
+  {ch:'第3章',topic:'相互依存与贸易的好处',note:'比较优势原理，生产可能性边界'},
+  {ch:'第4章',topic:'供给与需求（深化）',note:'均衡价格决定，市场出清'},
+  {ch:'第5章',topic:'弹性及其应用',note:'价格弹性、收入弹性、交叉弹性公式'},
+  {ch:'第6章',topic:'供给、需求与政府政策',note:'价格上限/下限，税收归宿'},
+  {ch:'第7章',topic:'消费者、生产者与市场效率',note:'消费者剩余与生产者剩余，帕累托效率'},
+  {ch:'第8章',topic:'税收的成本',note:'无谓损失，拉弗曲线'},
+  {ch:'第9章',topic:'国际贸易',note:'贸大重点：比较优势、进出口福利分析、贸易壁垒'},
+  {ch:'第10章',topic:'外部性',note:'科斯定理，庇古税，外部性内部化'},
+  {ch:'第11章',topic:'公共物品与公共资源',note:'搭便车问题，公地悲剧'},
+  {ch:'第12-13章',topic:'生产成本',note:'短期/长期成本曲线，规模经济 vs 范围经济'},
+  {ch:'第14章',topic:'竞争市场上的企业',note:'MR=MC利润最大化推导，完全竞争长期均衡'},
+  {ch:'第15章',topic:'垄断',note:'垄断定价，价格歧视（一/二/三级），DWL'},
+  {ch:'第16章',topic:'垄断竞争',note:'差异化产品市场，短期利润 vs 长期零利润'},
+  {ch:'第17章',topic:'寡头',note:'纳什均衡，博弈论入门，古诺模型'},
+  {ch:'第18-19章',topic:'生产要素市场',note:'劳动需求与工资决定，资本边际产品'},
+];
+const macroCh=[
+  {ch:'第12章',topic:'国民收入核算',note:'GDP/GNP区别，支出法/收入法/生产法'},
+  {ch:'第13章',topic:'简单国民收入决定',note:'凯恩斯十字，乘数效应推导'},
+  {ch:'第14章',topic:'产品市场与货币市场均衡（IS-LM）',note:'贸大核心考点：IS/LM推导，政策效果分析'},
+  {ch:'第15章',topic:'宏观经济政策分析',note:'财政政策挤出效应，货币政策传导机制'},
+  {ch:'第16章',topic:'总需求-总供给模型（AD-AS）',note:'AD-AS框架，价格粘性，供给冲击'},
+  {ch:'第17章',topic:'失业与通货膨胀',note:'菲利普斯曲线，自然失业率，滞胀'},
+  {ch:'第18章',topic:'开放经济（Mundell-Fleming）',note:'贸大必考：固定/浮动汇率下财政货币政策效果'},
+  {ch:'第19章',topic:'经济增长理论',note:'索洛模型，黄金律，内生增长理论'},
+];
+const polCh=[
+  {ch:'马原 第1章',topic:'马克思主义哲学（唯物论）',note:'肖精讲P1-30，腿姐考点清单同步标注'},
+  {ch:'马原 第2章',topic:'辩证法（矛盾、发展、联系）',note:'高频选择题来源'},
+  {ch:'马原 第3章',topic:'认识论与实践论',note:'实践标准，真理观'},
+  {ch:'马原 第4章',topic:'唯物史观',note:'生产力与生产关系，经济基础与上层建筑'},
+  {ch:'马原 第5-6章',topic:'政治经济学（剩余价值）',note:'难点，可配合徐涛视频'},
+  {ch:'史纲 第1-2章',topic:'近代史（1840-1919）',note:'时间轴梳理，注意周年纪念节点'},
+  {ch:'史纲 第3-4章',topic:'新民主主义革命（1919-1949）',note:'三大法宝，两个务必'},
+  {ch:'史纲 第5-6章',topic:'社会主义建设与改革',note:'重大历史决议，改革开放节点'},
+  {ch:'毛中特 第1-3章',topic:'毛泽东思想与新民主主义理论',note:'紧跟最新官方表述'},
+  {ch:'毛中特 第4-7章',topic:'中国特色社会主义理论体系',note:'二十大报告关键表述必背'},
+  {ch:'毛中特 第8-10章',topic:'习近平新时代中国特色社会主义思想',note:''},
+  {ch:'思修 第1-3章',topic:'人生观、理想信念、中国精神',note:'直接背腿姐手册主观题模板'},
+  {ch:'思修 第4-6章',topic:'社会主义核心价值观与法治',note:''},
+];
+const mathHigh=[
+  {ch:'第1讲',topic:'数列极限（ε-N定义）',note:'重点：夹逼定理，等价无穷小替换'},
+  {ch:'第2讲',topic:'函数极限（ε-δ定义）',note:'七种未定式，洛必达法则使用条件'},
+  {ch:'第3讲',topic:'连续性与间断点',note:'可去/跳跃/无穷间断点分类判断'},
+  {ch:'第4讲',topic:'导数定义与基本公式',note:'复合函数求导，链式法则'},
+  {ch:'第5讲',topic:'高阶导数与隐函数求导',note:'参数方程求导，对数求导法'},
+  {ch:'第6讲',topic:'微分中值定理',note:'罗尔/拉格朗日/柯西，贸大爱考证明题'},
+  {ch:'第7讲',topic:'泰勒公式与极值',note:'麦克劳林展开，极值充分条件'},
+  {ch:'第8讲',topic:'不定积分（换元法）',note:'第一类/第二类换元，三角换元'},
+  {ch:'第9讲',topic:'不定积分（分部积分）',note:'口诀：反对幂指三（优先级）'},
+  {ch:'第10讲',topic:'定积分定义与性质',note:'牛顿-莱布尼茨公式，积分中值定理'},
+  {ch:'第11讲',topic:'定积分计算与应用',note:'面积/旋转体体积/弧长公式'},
+  {ch:'第12讲',topic:'反常积分',note:'敛散性判断，比较判别法，Γ函数'},
+  {ch:'第13讲',topic:'多元函数偏导数',note:'全微分，混合偏导，隐函数定理'},
+  {ch:'第14讲',topic:'多元函数极值与最值',note:'拉格朗日乘数法，条件极值'},
+  {ch:'第15讲',topic:'二重积分（直角坐标）',note:'交换积分次序，积分区域画图'},
+  {ch:'第16讲',topic:'二重积分（极坐标）',note:'极坐标适用场景，对称性技巧'},
+  {ch:'第17讲',topic:'无穷级数（收敛性）',note:'比值/根值/积分判别法，交错级数'},
+  {ch:'第18讲',topic:'幂级数与傅里叶级数',note:'收敛域计算，展开为幂级数'},
+];
+const mathLin=[
+  {ch:'线代第1讲',topic:'行列式（定义与计算）',note:'余子式，代数余子式，按行/列展开'},
+  {ch:'线代第2讲',topic:'行列式（性质与技巧）',note:'加边法，递推法，范德蒙行列式'},
+  {ch:'线代第3讲',topic:'矩阵运算',note:'矩阵乘法不可交换，转置，逆矩阵求法'},
+  {ch:'线代第4讲',topic:'矩阵的秩与初等变换',note:'行阶梯形，行最简形，秩的性质'},
+  {ch:'线代第5讲',topic:'线性方程组',note:'齐次/非齐次通解结构，基础解系'},
+  {ch:'线代第6讲',topic:'向量组线性相关性',note:'线性表示，极大线性无关组'},
+  {ch:'线代第7讲',topic:'特征值与特征向量',note:'特征多项式，相似矩阵，对角化条件'},
+  {ch:'线代第8讲',topic:'实对称矩阵与正交矩阵',note:'正交对角化，施密特正交化步骤'},
+  {ch:'线代第9讲',topic:'二次型',note:'标准形，规范形，正定性判断'},
+];
+const mathProb=[
+  {ch:'概率第1讲',topic:'随机事件与概率',note:'古典/几何概型，条件概率，独立性'},
+  {ch:'概率第2讲',topic:'全概率公式与贝叶斯公式',note:'高频考点，注意正向/逆向使用场景'},
+  {ch:'概率第3讲',topic:'随机变量及其分布',note:'离散/连续型，CDF与PDF关系'},
+  {ch:'概率第4讲',topic:'常见分布（二项/泊松/正态）',note:'正态分布标准化，查表技巧'},
+  {ch:'概率第5讲',topic:'多维随机变量',note:'联合分布，边缘分布，独立性判断'},
+  {ch:'概率第6讲',topic:'数字特征（期望/方差/协方差）',note:'计算公式与性质，相关系数'},
+  {ch:'概率第7讲',topic:'大数定律与中心极限定理',note:'应用题型识别与使用条件'},
+  {ch:'概率第8讲',topic:'数理统计基础',note:'样本均值/方差，三大抽样分布'},
+  {ch:'概率第9讲',topic:'参数估计与假设检验',note:'矩估计，最大似然估计，置信区间'},
+];
+
+function getMath(idx){
+  if(idx<56){const ci=Math.min(Math.floor(idx/3),mathHigh.length-1);return {prefix:'张宇高数18讲',ch:mathHigh[ci]};}
+  const r=idx-56;
+  if(r<63){const ci=Math.min(Math.floor(r/7),mathLin.length-1);return {prefix:'张宇线代9讲',ch:mathLin[ci]};}
+  if(r<90){const ci=Math.min(Math.floor((r-63)/3),mathProb.length-1);return {prefix:'张宇概率9讲',ch:mathProb[ci]};}
+  return {prefix:'张宇模拟卷',ch:{ch:'限时训练',topic:'全真模拟（140分钟）',note:'严格计时，模拟考场'}};
+}
+function getMicro(idx){return microCh[Math.min(Math.floor(idx/3.4),microCh.length-1)]}
+function getMacro(idx){const r=idx-56;return macroCh[Math.min(Math.floor(r/10),macroCh.length-1)]}
+function getPol(idx){const r=idx-84;if(r<0)return null;return polCh[Math.min(Math.floor(r/12),polCh.length-1)]}
+
+function buildDay(idx){
+  const m=getMath(idx); const sections=[];
+  if(idx<56){
+    const mc=getMicro(idx);
+    sections.push({tag:'thesis',label:'论文',slot:'上午 7:00–9:00',tasks:[{t:'论文写作/修改（专注2小时）',n:'优先完成，再开始备考'}]});
+    sections.push({tag:'math',label:'数学',slot:'上午 9:00–11:30',tasks:[{t:`${m.prefix} ${m.ch.ch}：${m.ch.topic}`,n:m.ch.note},{t:'当日错题记入错题本',n:''}]});
+    sections.push({tag:'pro',label:'专业课（微观）',slot:'下午 14:00–16:30',tasks:[{t:`曼昆微观 ${mc.ch}：${mc.topic}`,n:mc.note},{t:'整理笔记：核心公式与图形',n:'供需图、无差异曲线等手绘一遍加深记忆'}]});
+    sections.push({tag:'eng',label:'英语',slot:'晚上 19:30–22:00',tasks:[{t:'扇贝单词打卡（新词+复习）',n:'目标：6月15日前完成第一轮'},{t:'长难句拆解练习（每天2句）',n:'从真题阅读中摘取，分析句子结构'}]});
+    sections.push({tag:'misc',label:'习惯',slot:'碎片时间',tasks:[{t:'回顾当日数学笔记（15分钟）',n:'睡前过一遍，强化记忆'}]});
+    return sections;
+  }
+  if(idx<140){
+    const rel=idx-56; const mc2=getMacro(idx); const pc=getPol(idx);
+    sections.push({tag:'math',label:'数学',slot:'上午 7:00–9:30',tasks:[{t:`${m.prefix} ${m.ch.ch}：${m.ch.topic}`,n:m.ch.note},{t:'张宇1000题对应章节（每日10题）',n:'不翻书先做，做完再对照解析'},{t:'错题本更新',n:''}]});
+    sections.push({tag:'pro',label:'专业课（宏观）',slot:'上午 9:30–12:00',tasks:[{t:`高鸿业宏观 ${mc2.ch}：${mc2.topic}`,n:mc2.note},{t:'绘制本章核心图形',n:'IS-LM/AD-AS等手绘，贸大爱考图形分析'}]});
+    sections.push({tag:'eng',label:'英语',slot:'下午 14:00–17:00',tasks:[{t:'真题阅读精读（1篇，唐迟方法）',n:'先做题再分析，标出逻辑结构'},{t:'扇贝单词打卡（第2轮滚动）',n:''},{t:rel>=28?'翻译练习（1段）':'长难句训练（每天3句）',n:''}]});
+    if(pc){sections.push({tag:'pol',label:'政治',slot:'晚上 19:30–22:00',tasks:[{t:`肖秀荣精讲精练 ${pc.ch}：${pc.topic}`,n:pc.note},{t:'1000题对应章节刷题（每日20题）',n:'错题标记，当日复盘'},{t:'腿姐考点清单同步标注重点',n:'9月出版后启用'}]});}
+    else{sections.push({tag:'eng',label:'英语（深化）',slot:'晚上 19:30–21:30',tasks:[{t:'完型+新题型专项训练',n:'政治8月中旬前晚上强化英语'}]});}
+    return sections;
+  }
+  if(idx<196){
+    const rel=idx-140; const pc=getPol(idx);
+    sections.push({tag:'math',label:'数学',slot:'上午 7:00–9:30',tasks:[{t:'张宇/李林模拟卷（限时140分钟）',n:'严格计时，模拟真实考场环境'},{t:'对卷：错题分类（概念/计算/题型不熟）',n:''}]});
+    sections.push({tag:'pro',label:'专业课',slot:'上午 9:30–12:00',tasks:[{t:rel<28?'贸大历年真题精做（专业课）':'经济学核心框架背诵（思维导图）',n:rel<28?'逐题分析答题结构，归纳贸大出题偏好':'重点：IS-LM、AD-AS、索洛模型、垄断定价'},{t:'简答题/论述题训练（每日1题）',n:'限时15分钟，练答题框架'}]});
+    sections.push({tag:'eng',label:'英语',slot:'下午 14:00–16:30',tasks:[{t:'作文模板整理与背诵',n:'大作文：论说文框架；小作文：信件/备忘录格式'},{t:'翻译+阅读保温（每日1篇）',n:'不能停，保持手感'}]});
+    sections.push({tag:'pol',label:'政治',slot:'晚上 19:30–22:00',tasks:[{t:pc?`肖秀荣精讲精练 ${pc.ch}：${pc.topic}`:'肖四肖八精做（分析题答题要点）',n:pc?pc.note:''},{t:'腿姐《冲刺背诵手册》（9月出版后启用）',n:'背诵量小但准确率高'},{t:'时事政治补充（近半年热点）',n:'11月后重点补充'}]});
+    return sections;
+  }
+  sections.push({tag:'math',label:'数学',slot:'上午 7:30–10:00',tasks:[{t:'错题本回顾（不做新题）',n:'重点：反复出错的题型'},{t:'公式手册每日过一遍',n:'积分公式、线代结论、概率公式'}]});
+  sections.push({tag:'pro',label:'专业课',slot:'上午 10:00–12:00',tasks:[{t:'核心概念默写确认',n:'IS-LM推导、索洛模型、垄断vs竞争比较'}]});
+  sections.push({tag:'eng',label:'英语',slot:'下午 14:00–16:00',tasks:[{t:'大作文默写+翻译练手',n:''}]});
+  sections.push({tag:'pol',label:'政治',slot:'晚上 19:30–22:00',tasks:[{t:'肖四分析题答题要点反复背',n:'坚持到最后一天'},{t:'腿姐《冲刺背诵手册》查漏补缺',n:''}]});
+  return sections;
+}
+
+const TAG_CLASS={math:'tag-math',eng:'tag-eng',pro:'tag-pro',pol:'tag-pol',thesis:'tag-thesis',misc:'tag-misc'};
+let cur=new Date();
+let saved={};
+try{saved=JSON.parse(localStorage.getItem('kaoyan_app')||'{}')}catch(e){}
+function save(){try{localStorage.setItem('kaoyan_app',JSON.stringify(saved))}catch(e){}}
+function key(idx,si,ti){return `d${idx}_s${si}_t${ti}`}
+
+function dayDone(idx){const secs=buildDay(idx);let total=0,done=0;secs.forEach((s,si)=>s.tasks.forEach((t,ti)=>{total++;if(saved[key(idx,si,ti)])done++;}));return{total,done}}
+
+function getStreak(){let streak=0,d=addDays(cur,-1);for(let i=0;i<400;i++){const idx=dayIdx(d);if(idx<0)break;const{total,done}=dayDone(idx);if(total>0&&done===total){streak++;d=addDays(d,-1);}else break;}return streak}
+
+function renderStrip(){
+  const strip=document.getElementById('weekStrip');strip.innerHTML='';
+  const mon=addDays(cur,-((cur.getDay()+6)%7));
+  for(let i=0;i<7;i++){
+    const dd=addDays(mon,i);const idx=dayIdx(dd);
+    const{total,done}=idx>=0?dayDone(idx):{total:0,done:0};
+    const isActive=fmtShort(dd)===fmtShort(cur);
+    const dotCls=done===0?'':(done===total?'full':'partial');
+    const cell=document.createElement('div');
+    cell.className='week-cell'+(isActive?' active':'');
+    cell.innerHTML=`<div class="wc-day">周${WEEKDAYS[dd.getDay()]}</div><div class="wc-date">${fmtShort(dd)}</div><div class="wc-dot ${dotCls}"></div>`;
+    cell.onclick=()=>{cur=dd;render()};
+    strip.appendChild(cell);
+  }
+}
+
+function render(){
+  const idx=dayIdx(cur);
+  document.getElementById('dateLabel').textContent=fmtDate(cur);
+  document.getElementById('phaseBadge').textContent=getPhase(Math.max(0,idx));
+  renderCountdown();
+  renderStrip();
+  const container=document.getElementById('taskContainer');container.innerHTML='';
+  if(idx<0){container.innerHTML='<div style="text-align:center;padding:40px;color:var(--text3);font-size:14px">该日期早于计划开始日（2026年5月17日）</div>';return}
+  const sections=buildDay(idx);let total=0,done=0;
+  sections.forEach((section,si)=>{
+    const block=document.createElement('div');block.className='time-block';
+    block.innerHTML=`<div class="time-header"><span class="subj-tag ${TAG_CLASS[section.tag]}">${section.label}</span><span class="time-range">${section.slot}</span></div>`;
+    section.tasks.forEach((task,ti)=>{
+      const k=key(idx,si,ti);const checked=!!saved[k];
+      total++;if(checked)done++;
+      const item=document.createElement('div');
+      item.className='task-item'+(checked?' done':'');
+      // Timer button with subject color and per-subject duration
+      const taskSubj=section.tag||'misc';
+      const dur=subjectDurations[taskSubj]||subjectDurations.work||25;
+      const tBtn=`<button class="task-timer-btn subj-${taskSubj}" title="用番茄钟专注此任务（${dur}分钟）" onclick="startTimerFor(event,'${task.t.replace(/'/g,"\\'")}','${taskSubj}')">🍅 ${dur}分</button>`;
+      item.innerHTML=`<div class="cb ${checked?'on':''}">${checked?'✓':''}</div><div class="task-content"><div class="task-text">${task.t}</div>${task.n?`<div class="task-note">${task.n}</div>`:''}</div>${tBtn}`;
+      item.querySelector('.cb').addEventListener('click',(e)=>{e.stopPropagation();saved[k]=!saved[k];save();render()});
+      item.querySelector('.task-content').addEventListener('click',()=>{saved[k]=!saved[k];save();render()});
+      block.appendChild(item);
+    });
+    container.appendChild(block);
+  });
+  const pct=total>0?Math.round(done/total*100):0;
+  document.getElementById('sDone').textContent=done;
+  document.getElementById('sTotal').textContent=total;
+  document.getElementById('sPct').textContent=pct+'%';
+  document.getElementById('sStreak').textContent=getStreak();
+  const bar=document.getElementById('progBar');
+  bar.style.width=pct+'%';bar.className='prog-bar'+(pct===100?' complete':'');
+  document.getElementById('progLbl').textContent=`${done} / ${total}`;
+}
+
+function go(delta){cur=addDays(cur,delta);render()}
+document.addEventListener('keydown',e=>{if(document.getElementById('tab-plan').classList.contains('active')){if(e.key==='ArrowLeft')go(-1);if(e.key==='ArrowRight')go(1)}});
+
+// ============================================================
+//  TAB SWITCHING
+// ============================================================
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
+  if(tab==='tomato'){document.getElementById('tomatoTabBtn').innerHTML='🍅 番茄钟';}
+  if(tab==='stats'){renderStats();}
+}
+
+// ============================================================
+//  TOMATO TIMER
+// ============================================================
+let tSettings={work:25,short:5,long:15};
+let subjectDurations={math:50,eng:25,pro:45,pol:30,thesis:60,misc:25};
+try{const s=JSON.parse(localStorage.getItem('kaoyan_subj_dur')||'null');if(s)subjectDurations=Object.assign(subjectDurations,s);}catch(e){}
+function saveSubjDur(){try{localStorage.setItem('kaoyan_subj_dur',JSON.stringify(subjectDurations))}catch(e){}}
+
+let tMode='work';
+let tCurrentSubj='misc';
+let tSecsLeft=25*60;
+let tTotalSecs=25*60;
+let tRunning=false;
+let tInterval=null;
+let tCurrentTask='';
+let tLog=[];
+try{tLog=JSON.parse(localStorage.getItem('kaoyan_tomato_log')||'[]')}catch(e){}
+function saveTLog(){try{localStorage.setItem('kaoyan_tomato_log',JSON.stringify(tLog))}catch(e){}}
+
+const CIRCUMFERENCE=502.65; // 2π×80
+
+function updateRing(){
+  const frac=tSecsLeft/tTotalSecs;
+  const offset=CIRCUMFERENCE*(1-frac);
+  const ring=document.getElementById('ringFg');
+  ring.style.strokeDashoffset=offset;
+  // Color by subject when in work mode, by break type otherwise
+  ring.className='ring-fg';
+  if(tMode==='work'){ring.classList.add('s-'+(tCurrentSubj||'misc'));}
+  else if(tMode==='short'){ring.style.stroke='var(--green)';}
+  else if(tMode==='long'){ring.style.stroke='var(--accent)';}
+}
+
+function fmtSecs(s){const m=Math.floor(s/60);const sec=s%60;return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`}
+
+function updateDisplay(){
+  document.getElementById('ringTime').textContent=fmtSecs(tSecsLeft);
+  document.title=tRunning?`${fmtSecs(tSecsLeft)} - 考研打卡`:'考研打卡 · 贸大应用经济学';
+  updateRing();
+  const modeNames={work:'🍅 专注中',short:'☕ 短休息',long:'🌿 长休息'};
+  document.getElementById('ringMode').textContent=modeNames[tMode];
+  document.getElementById('startBtn').textContent=tRunning?'暂停':'开始';
+  document.getElementById('startBtn').className='ctrl-btn primary';
+  document.getElementById('tLabel').textContent=tCurrentTask?`正在专注：`:'点击任务旁的 🍅 开始专注';
+  document.getElementById('tTaskName').textContent=tCurrentTask||'—';
+}
+
+function setMode(mode){
+  if(tRunning)return;
+  tMode=mode;
+  if(mode==='work'){
+    // Use subject duration if there's a current subject, else default work duration
+    tTotalSecs=(subjectDurations[tCurrentSubj]||tSettings.work)*60;
+  } else {
+    tTotalSecs=tSettings[mode]*60;
+  }
+  tSecsLeft=tTotalSecs;
+  document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('mode'+mode.charAt(0).toUpperCase()+mode.slice(1)).classList.add('active');
+  if(mode!=='work'){tCurrentTask='';tCurrentSubj='misc';}
+  updateDisplay();
+}
+
+function toggleTimer(){
+  if(tRunning){
+    clearInterval(tInterval);tRunning=false;
+  } else {
+    tRunning=true;
+    tInterval=setInterval(()=>{
+      tSecsLeft--;
+      updateDisplay();
+      if(tSecsLeft<=0){
+        clearInterval(tInterval);tRunning=false;
+        onTimerEnd();
+      }
+    },1000);
+  }
+  updateDisplay();
+}
+
+function resetTimer(){
+  clearInterval(tInterval);tRunning=false;
+  tSecsLeft=tTotalSecs;
+  updateDisplay();
+}
+
+function skipTimer(){
+  clearInterval(tInterval);tRunning=false;
+  tSecsLeft=0;
+  onTimerEnd();
+}
+
+function onTimerEnd(){
+  if(tMode==='work'){
+    // Log completed tomato
+    const now=new Date();
+    const entry={task:tCurrentTask||'自由专注',subj:tCurrentSubj||'misc',time:`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`,dur:Math.round(tTotalSecs/60),date:fmtShort(now)};
+    tLog.unshift(entry);
+    if(tLog.length>50)tLog.pop();
+    saveTLog();
+    renderLog();
+    // badge on plan tab if on tomato tab
+    if(!document.getElementById('tab-tomato').classList.contains('active')){
+      document.getElementById('tomatoTabBtn').innerHTML='🍅 番茄钟<span class="notif-badge"></span>';
+    }
+    // Sound (Web Audio)
+    try{
+      const ctx=new(window.AudioContext||window.webkitAudioContext)();
+      [0,300,600].forEach(delay=>{
+        const osc=ctx.createOscillator();const gain=ctx.createGain();
+        osc.connect(gain);gain.connect(ctx.destination);
+        osc.frequency.value=880;osc.type='sine';
+        gain.gain.setValueAtTime(0.3,ctx.currentTime+delay/1000);
+        gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+delay/1000+0.4);
+        osc.start(ctx.currentTime+delay/1000);osc.stop(ctx.currentTime+delay/1000+0.4);
+      });
+    }catch(e){}
+    // Auto switch to short break
+    tMode='short';tTotalSecs=tSettings.short*60;tSecsLeft=tTotalSecs;
+    document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById('modeShort').classList.add('active');
+  } else {
+    // Break over, back to work (use last subject's duration if set)
+    tMode='work';
+    tTotalSecs=(subjectDurations[tCurrentSubj]||tSettings.work)*60;
+    tSecsLeft=tTotalSecs;
+    document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById('modeWork').classList.add('active');
+  }
+  updateDisplay();
+}
+
+function adjustSetting(key,delta){
+  tSettings[key]=Math.max(1,tSettings[key]+delta);
+  document.getElementById('set'+key.charAt(0).toUpperCase()+key.slice(1)).textContent=tSettings[key];
+  if(key===tMode&&!tRunning){tTotalSecs=tSettings[key]*60;tSecsLeft=tTotalSecs;updateDisplay();}
+}
+
+function startTimerFor(e,taskName,subj){
+  e.stopPropagation();
+  tCurrentTask=taskName;
+  tCurrentSubj=subj||'misc';
+  tMode='work';
+  tTotalSecs=(subjectDurations[tCurrentSubj]||tSettings.work)*60;
+  tSecsLeft=tTotalSecs;
+  clearInterval(tInterval);tRunning=false;
+  document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('modeWork').classList.add('active');
+  switchTab('tomato');
+  updateDisplay();
+  setTimeout(toggleTimer,400);
+}
+
+function renderLog(){
+  const today=fmtShort(new Date());
+  const todayLog=tLog.filter(e=>e.date===today);
+  document.getElementById('logCount').textContent=`${todayLog.length} 个`;
+  const el=document.getElementById('logList');
+  if(todayLog.length===0){el.innerHTML='<div class="log-empty">今天还没有完成的番茄</div>';return}
+  el.innerHTML=todayLog.map(e=>`
+    <div class="log-item">
+      <div class="log-tomato">🍅</div>
+      <div class="log-info">
+        <div class="log-name">${e.task}</div>
+        <div class="log-time">${e.time}</div>
+      </div>
+      <div class="log-dur">${e.dur} 分钟</div>
+    </div>`).join('');
+}
+
+function clearLog(){
+  const today=fmtShort(new Date());
+  tLog=tLog.filter(e=>e.date!==today);
+  saveTLog();renderLog();
+}
+
+
+
+// ============================================================
+//  COUNTDOWN
+// ============================================================
+const EXAM_DATE = new Date(2026,11,20); // Dec 20, 2026 (approx Chinese postgrad exam date)
+function renderCountdown(){
+  const today=toMid(new Date());
+  const diff=Math.ceil((toMid(EXAM_DATE)-today)/86400000);
+  const el=document.getElementById('countdown');
+  if(diff>0){
+    el.textContent=`距考试 ${diff} 天`;
+    el.classList.toggle('urgent',diff<=30);
+  } else if(diff===0){
+    el.textContent='今天考试 加油！';
+    el.classList.add('urgent');
+  } else {
+    el.textContent='考试已结束';
+    el.classList.remove('urgent');
+  }
+}
+
+// ============================================================
+//  SUBJECT DURATION SETTINGS UI
+// ============================================================
+const SUBJ_LIST=[
+  {key:'math',name:'数学',color:'#EF9F27'},
+  {key:'eng',name:'英语',color:'#2d7a4f'},
+  {key:'pro',name:'专业课',color:'#7F77DD'},
+  {key:'pol',name:'政治',color:'#2d5a8e'},
+  {key:'thesis',name:'论文',color:'#c0392b'},
+  {key:'misc',name:'其他',color:'#888780'},
+];
+function renderSubjDur(){
+  const grid=document.getElementById('subjDurGrid');
+  if(!grid)return;
+  grid.innerHTML=SUBJ_LIST.map(s=>`
+    <div class="subj-dur-cell">
+      <div class="subj-dur-lbl"><div class="subj-dur-dot" style="background:${s.color}"></div>${s.name}</div>
+      <div class="subj-dur-val">
+        <button class="sd-inc" onclick="adjustSubjDur('${s.key}',-5)">−</button>
+        <span class="subj-dur-num" id="sd-${s.key}">${subjectDurations[s.key]}</span>
+        <button class="sd-inc" onclick="adjustSubjDur('${s.key}',5)">+</button>
+      </div>
+    </div>`).join('');
+}
+function adjustSubjDur(key,delta){
+  subjectDurations[key]=Math.max(5,Math.min(120,subjectDurations[key]+delta));
+  document.getElementById('sd-'+key).textContent=subjectDurations[key];
+  saveSubjDur();
+  // If current timer is for this subject and not running, update display
+  if(!tRunning&&tMode==='work'&&tCurrentSubj===key){
+    tTotalSecs=subjectDurations[key]*60;
+    tSecsLeft=tTotalSecs;
+    updateDisplay();
+  }
+  // Re-render plan tasks to update button labels
+  render();
+}
+
+// ============================================================
+//  BACKUP / RESTORE
+// ============================================================
+function showStatus(msg,isError){
+  const el=document.getElementById('backupStatus');
+  el.textContent=msg;
+  el.style.color=isError?'var(--red)':'var(--green)';
+  setTimeout(()=>{el.textContent=''},3500);
+}
+
+function exportData(){
+  const data={
+    version:1,
+    exportedAt:new Date().toISOString(),
+    kaoyan_app:saved,
+    kaoyan_tomato_log:tLog,
+    kaoyan_subj_dur:subjectDurations,
+  };
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const dateStr=new Date().toISOString().slice(0,10);
+  a.href=url;a.download=`kaoyan-backup-${dateStr}.json`;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showStatus('✓ 备份已导出');
+}
+
+function importData(event){
+  const file=event.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const data=JSON.parse(e.target.result);
+      if(!confirm('导入将覆盖当前所有数据（打卡、番茄、设置）。确定继续吗？'))return;
+      if(data.kaoyan_app){saved=data.kaoyan_app;save();}
+      if(data.kaoyan_tomato_log){tLog=data.kaoyan_tomato_log;saveTLog();}
+      if(data.kaoyan_subj_dur){subjectDurations=Object.assign(subjectDurations,data.kaoyan_subj_dur);saveSubjDur();}
+      renderSubjDur();render();renderLog();
+      showStatus('✓ 数据已导入');
+    }catch(err){
+      showStatus('✗ 导入失败：文件格式错误',true);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value='';
+}
+
+function clearAll(){
+  if(!confirm('确定清空全部数据（打卡、番茄记录、设置）？此操作不可撤销。'))return;
+  if(!confirm('再次确认：将清空所有备考数据，确定吗？'))return;
+  saved={};tLog=[];
+  subjectDurations={math:50,eng:25,pro:45,pol:30,thesis:60,misc:25};
+  localStorage.removeItem('kaoyan_app');
+  localStorage.removeItem('kaoyan_tomato_log');
+  localStorage.removeItem('kaoyan_subj_dur');
+  renderSubjDur();render();renderLog();
+  showStatus('✓ 已清空');
+}
+
+
+// ============================================================
+//  STATS
+// ============================================================
+let statsPeriod = 'day';
+
+function setPeriod(p){
+  statsPeriod=p;
+  ['Day','Week','Month','All'].forEach(x=>document.getElementById('p'+x).classList.remove('active'));
+  document.getElementById('p'+p.charAt(0).toUpperCase()+p.slice(1)).classList.add('active');
+  renderStats();
+}
+
+function fmtDateKey(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function parseDateKey(s){ const[y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); }
+
+function getFilteredLog(){
+  const today = new Date();
+  const todayKey = fmtDateKey(today);
+  if(statsPeriod==='day') return tLog.filter(e=>e.date===fmtShort(today));
+  if(statsPeriod==='week'){
+    const mon = toMid(addDays(today, -((today.getDay()+6)%7)));
+    return tLog.filter(e=>{
+      // e.date is m/d format, need to reconstruct full date using current year
+      const parts=e.date.split('/');
+      const d=new Date(today.getFullYear(),parseInt(parts[0])-1,parseInt(parts[1]));
+      return d>=mon && d<=today;
+    });
+  }
+  if(statsPeriod==='month'){
+    const thisMonth=`${today.getMonth()+1}/`;
+    return tLog.filter(e=>e.date.startsWith(thisMonth)||(e.date.split('/')[0]===(today.getMonth()+1).toString()));
+  }
+  return tLog; // all
+}
+
+function getTagForTask(taskName){
+  const t=taskName.toLowerCase();
+  if(t.includes('数学')||t.includes('张宇')||t.includes('线代')||t.includes('概率')||t.includes('高数')) return 'math';
+  if(t.includes('英语')||t.includes('单词')||t.includes('阅读')||t.includes('作文')||t.includes('翻译')) return 'eng';
+  if(t.includes('专业')||t.includes('微观')||t.includes('宏观')||t.includes('曼昆')||t.includes('高鸿业')||t.includes('贸大')) return 'pro';
+  if(t.includes('政治')||t.includes('肖')||t.includes('腿姐')||t.includes('马原')||t.includes('史纲')||t.includes('毛中特')||t.includes('思修')) return 'pol';
+  if(t.includes('论文')) return 'thesis';
+  return 'misc';
+}
+
+const SUBJ_COLORS={math:'#EF9F27',eng:'#2d7a4f',pro:'#7F77DD',pol:'#2d5a8e',thesis:'#c0392b',misc:'#888780'};
+const SUBJ_NAMES={math:'数学',eng:'英语',pro:'专业课',pol:'政治',thesis:'论文',misc:'其他'};
+
+function computeStreaks(){
+  // Build set of days with at least one pomodoro
+  const daySet=new Set(tLog.map(e=>e.date));
+  const today=new Date();
+  let cur=0, max=0, d=new Date(today);
+  // current streak
+  while(true){
+    if(daySet.has(fmtShort(d))){cur++;d=addDays(d,-1);}
+    else break;
+  }
+  // max streak - brute force over all log days sorted
+  const allDays=[...daySet].map(s=>{const p=s.split('/');return new Date(today.getFullYear(),parseInt(p[0])-1,parseInt(p[1]));}).sort((a,b)=>a-b);
+  let streak=allDays.length?1:0;
+  for(let i=1;i<allDays.length;i++){
+    const diff=(allDays[i]-allDays[i-1])/86400000;
+    if(diff===1)streak++;
+    else streak=1;
+    if(streak>max)max=streak;
+  }
+  max=Math.max(max,cur);
+  return{cur,max};
+}
+
+function renderStats(){
+  const log=getFilteredLog();
+  const totalP=log.length;
+  const totalM=log.reduce((s,e)=>s+(e.dur||25),0);
+  const daySet=new Set(log.map(e=>e.date));
+  const days=daySet.size||1;
+  const avg=totalP>0?Math.round(totalP/days*10)/10:0;
+
+  document.getElementById('stPomodoros').textContent=totalP;
+  document.getElementById('stMinutes').textContent=totalM;
+  document.getElementById('stDays').textContent=daySet.size;
+  document.getElementById('stAvg').textContent=avg;
+
+  const{cur,max}=computeStreaks();
+  document.getElementById('stCurStreak').textContent=cur+'🔥';
+  document.getElementById('stMaxStreak').textContent=max;
+
+  renderBarChart();
+  renderSubjectBars(log);
+  renderHeatmap();
+}
+
+function renderBarChart(){
+  const today=new Date();
+  let bars=[];
+  const title=document.getElementById('barChartTitle');
+
+  if(statsPeriod==='day'){
+    // hours of today
+    title.textContent='今日各小时专注';
+    const todayStr=fmtShort(today);
+    const byHour=Array(24).fill(0);
+    tLog.filter(e=>e.date===todayStr).forEach(e=>{
+      const h=parseInt((e.time||'00:00').split(':')[0]);
+      byHour[h]++;
+    });
+    // show hours 6-24
+    for(let h=6;h<=23;h++) bars.push({lbl:`${h}时`,val:byHour[h],isToday:false});
+  } else if(statsPeriod==='week'){
+    title.textContent='本周每日番茄数';
+    const mon=toMid(addDays(today,-((today.getDay()+6)%7)));
+    for(let i=0;i<7;i++){
+      const d=addDays(mon,i);
+      const ds=fmtShort(d);
+      const count=tLog.filter(e=>e.date===ds).length;
+      bars.push({lbl:`周${WEEKDAYS[d.getDay()]}`,val:count,isToday:ds===fmtShort(today)});
+    }
+  } else if(statsPeriod==='month'){
+    title.textContent='本月每日番茄数';
+    const daysInMonth=new Date(today.getFullYear(),today.getMonth()+1,0).getDate();
+    for(let d=1;d<=daysInMonth;d++){
+      const ds=`${today.getMonth()+1}/${d}`;
+      const count=tLog.filter(e=>e.date===ds).length;
+      const isT=d===today.getDate();
+      bars.push({lbl:d%5===0||d===1?`${d}日`:'',val:count,isToday:isT});
+    }
+  } else {
+    // All: group by week
+    title.textContent='各周番茄总数';
+    const START_DAY=new Date(2026,4,17);
+    const weeks=Math.ceil((today-START_DAY)/86400000/7)+1;
+    for(let w=0;w<Math.min(weeks,30);w++){
+      const wStart=addDays(START_DAY,w*7);
+      const wEnd=addDays(wStart,6);
+      let count=0;
+      tLog.forEach(e=>{
+        const p=e.date.split('/');
+        const d=new Date(today.getFullYear(),parseInt(p[0])-1,parseInt(p[1]));
+        if(d>=wStart&&d<=wEnd)count++;
+      });
+      bars.push({lbl:`W${w+1}`,val:count,isToday:false});
+    }
+  }
+
+  const maxVal=Math.max(...bars.map(b=>b.val),1);
+  const container=document.getElementById('barChart');
+  container.innerHTML=bars.map(b=>`
+    <div class="bar-col">
+      <div class="bar-val" style="font-size:8px;color:var(--text3)">${b.val>0?b.val:''}</div>
+      <div class="bar-fill${b.val===0?' zero':''}${b.isToday?' today':''}" style="height:${Math.max(b.val/maxVal*80,b.val>0?6:3)}px"></div>
+      <div class="bar-lbl">${b.lbl}</div>
+    </div>`).join('');
+}
+
+function renderSubjectBars(log){
+  const bySubj={};
+  log.forEach(e=>{
+    const tag=getTagForTask(e.task);
+    bySubj[tag]=(bySubj[tag]||0)+(e.dur||25);
+  });
+  const maxM=Math.max(...Object.values(bySubj),1);
+  const order=['math','eng','pro','pol','thesis','misc'];
+  const container=document.getElementById('subjBars');
+  const rows=order.filter(k=>bySubj[k]>0);
+  if(rows.length===0){container.innerHTML='<div style="font-size:13px;color:var(--text3);text-align:center;padding:16px 0">暂无数据</div>';return}
+  container.innerHTML=rows.map(k=>`
+    <div class="subj-bar-row">
+      <div class="subj-bar-name">${SUBJ_NAMES[k]}</div>
+      <div class="subj-bar-track"><div class="subj-bar-fill" style="width:${Math.round(bySubj[k]/maxM*100)}%;background:${SUBJ_COLORS[k]}"></div></div>
+      <div class="subj-bar-val">${bySubj[k]}分钟</div>
+    </div>`).join('');
+}
+
+function renderHeatmap(){
+  // Always show full timeline heatmap regardless of period filter
+  const today=new Date();
+  const START_HEAT=new Date(2026,4,17);
+  const totalDays=Math.ceil((today-START_HEAT)/86400000)+1;
+
+  // Build count map
+  const countMap={};
+  tLog.forEach(e=>{
+    const k=e.date;
+    countMap[k]=(countMap[k]||0)+1;
+  });
+
+  const maxCount=Math.max(...Object.values(countMap),1);
+  const colors=['#f7e8e6','#e8a89e','#d46b5e','#c0392b'];
+
+  function getColor(count){
+    if(count===0)return '#f0ede6';
+    const lvl=Math.min(Math.ceil(count/maxCount*4)-1,3);
+    return colors[lvl];
+  }
+
+  // Render as weeks grid (rows=days-of-week, cols=weeks)
+  const startDow=(START_HEAT.getDay()+6)%7; // Mon=0
+  const totalCells=startDow+totalDays;
+  const numWeeks=Math.ceil(totalCells/7);
+
+  const container=document.getElementById('heatmap');
+  container.style.gridTemplateColumns=`repeat(${numWeeks},14px)`;
+  container.style.gridTemplateRows='repeat(7,14px)';
+
+  let cells=[];
+  for(let col=0;col<numWeeks;col++){
+    for(let row=0;row<7;row++){
+      const cellIdx=col*7+row;
+      const dayOff=cellIdx-startDow;
+      if(dayOff<0||dayOff>=totalDays){
+        cells.push(`<div class="hm-cell" style="background:transparent"></div>`);
+      } else {
+        const d=addDays(START_HEAT,dayOff);
+        const ds=fmtShort(d);
+        const count=countMap[ds]||0;
+        const isToday=ds===fmtShort(today);
+        const title=`${ds}: ${count}个番茄`;
+        cells.push(`<div class="hm-cell" style="background:${getColor(count)};${isToday?'outline:2px solid var(--accent);outline-offset:-2px':''}" title="${title}"></div>`);
+      }
+    }
+  }
+  container.innerHTML=cells.join('');
+}
+
+
+// Init
+renderSubjDur();
+updateDisplay();
+renderLog();
+render();
+// Update countdown every minute
+setInterval(renderCountdown,60000);
+
+// ============================================================
+//  SERVICE WORKER REGISTRATION
+// ============================================================
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      console.log('SW registered:', reg.scope);
+    }).catch(err => {
+      console.log('SW registration failed:', err);
+    });
+  });
+}
+
+// Detect standalone mode (running as installed PWA)
+if (window.matchMedia('(display-mode: standalone)').matches || 
+    window.navigator.standalone === true) {
+  document.documentElement.classList.add('pwa-installed');
+}
+
+// Show install hint banner on first visit if not yet installed
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  showInstallHint();
+});
+
+function showInstallHint() {
+  if (localStorage.getItem('kaoyan_install_dismissed')) return;
+  if (window.matchMedia('(display-mode: standalone)').matches) return;
+  
+  const banner = document.createElement('div');
+  banner.id = 'installBanner';
+  banner.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#2d5a8e;color:#fff;padding:12px 16px;display:flex;align-items:center;gap:10px;z-index:1000;font-size:13px;box-shadow:0 -2px 10px rgba(0,0,0,0.15);padding-bottom:max(12px,env(safe-area-inset-bottom))';
+  banner.innerHTML = '<div style="flex:1">📱 安装到主屏幕，像 App 一样使用</div><button style="padding:6px 14px;background:#fff;color:#2d5a8e;border:none;border-radius:6px;font-size:12px;cursor:pointer;font-weight:500" onclick="installPWA()">安装</button><button style="padding:6px 10px;background:transparent;color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;font-size:12px;cursor:pointer" onclick="dismissInstall()">×</button>';
+  document.body.appendChild(banner);
+}
+
+function installPWA() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(() => {
+    deferredPrompt = null;
+    document.getElementById('installBanner')?.remove();
+  });
+}
+
+function dismissInstall() {
+  localStorage.setItem('kaoyan_install_dismissed', '1');
+  document.getElementById('installBanner')?.remove();
+}
+
+// iOS install hint (Safari doesn't fire beforeinstallprompt)
+function maybeShowIOSHint() {
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStandalone = window.navigator.standalone === true;
+  if (isIOS && !isStandalone && !localStorage.getItem('kaoyan_install_dismissed')) {
+    const banner = document.createElement('div');
+    banner.id = 'installBanner';
+    banner.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#2d5a8e;color:#fff;padding:12px 16px;display:flex;align-items:center;gap:10px;z-index:1000;font-size:12px;line-height:1.4;padding-bottom:max(12px,env(safe-area-inset-bottom))';
+    banner.innerHTML = '<div style="flex:1">📱 点击 Safari 底部 <strong>分享按钮</strong> → 选择"添加到主屏幕"，即可像 App 一样使用</div><button style="padding:6px 10px;background:transparent;color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;font-size:11px;cursor:pointer;flex-shrink:0" onclick="dismissInstall()">知道了</button>';
+    document.body.appendChild(banner);
+  }
+}
+setTimeout(maybeShowIOSHint, 1500);
+
+
+</script>
+
+
+<!-- ====== STATS TAB ====== -->
+<div class="tab-panel" id="tab-stats">
+  <div class="stats-page">
+    <div class="stats-period-row">
+      <button class="period-btn active" id="pDay" onclick="setPeriod('day')">今日</button>
+      <button class="period-btn" id="pWeek" onclick="setPeriod('week')">本周</button>
+      <button class="period-btn" id="pMonth" onclick="setPeriod('month')">本月</button>
+      <button class="period-btn" id="pAll" onclick="setPeriod('all')">全程</button>
+    </div>
+
+    <div class="stats-summary-grid">
+      <div class="ss-card"><div class="ss-num" id="stPomodoros">0</div><div class="ss-lbl">完成番茄</div></div>
+      <div class="ss-card"><div class="ss-num" id="stMinutes">0</div><div class="ss-lbl">专注分钟</div></div>
+      <div class="ss-card"><div class="ss-num" id="stDays">0</div><div class="ss-lbl">专注天数</div></div>
+      <div class="ss-card"><div class="ss-num" id="stAvg">0</div><div class="ss-lbl">日均番茄</div></div>
+    </div>
+
+    <div class="streak-row">
+      <div class="streak-card">
+        <div class="streak-num" id="stCurStreak">0🔥</div>
+        <div class="streak-lbl">当前连续专注天数</div>
+      </div>
+      <div class="streak-card">
+        <div class="streak-num" id="stMaxStreak">0</div>
+        <div class="streak-lbl">历史最长连续</div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title" id="barChartTitle">近7天番茄数</div>
+      <div class="bar-chart" id="barChart"></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">各科专注分布</div>
+      <div class="subject-bars" id="subjBars"></div>
+    </div>
+
+    <div class="chart-card" id="heatmapCard">
+      <div class="chart-title">全程专注热力图</div>
+      <div class="heatmap-wrap"><div class="heatmap-grid" id="heatmap"></div></div>
+      <div class="hm-legend">
+        <span>少</span>
+        <div class="hm-swatch" style="background:#f7e8e6"></div>
+        <div class="hm-swatch" style="background:#e8a89e"></div>
+        <div class="hm-swatch" style="background:#d46b5e"></div>
+        <div class="hm-swatch" style="background:#c0392b"></div>
+        <span>多</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>
