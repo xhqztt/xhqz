@@ -21,6 +21,9 @@
 <!-- Icons -->
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+
+<!-- Supabase JS Client (loaded from CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
   --bg: #f7f5f0;
@@ -294,6 +297,41 @@ body{font-family:'Noto Sans SC',sans-serif;background:var(--bg);color:var(--text
   .app-title{font-size:13px}
   .subj-dur-grid{grid-template-columns:1fr}
 }
+
+/* Sync indicator */
+.sync-status{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:3px 9px;border-radius:20px;background:var(--surface2);color:var(--text3);cursor:pointer;transition:background .15s;white-space:nowrap}
+.sync-status:hover{background:var(--border)}
+.sync-status.synced{background:var(--green-light);color:var(--green)}
+.sync-status.syncing{background:var(--accent-light);color:var(--accent)}
+.sync-status.error{background:var(--red-light);color:var(--red)}
+.sync-status.offline{background:var(--surface2);color:var(--text3)}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
+.sync-status.syncing .sync-dot{animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+
+/* Setup modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px}
+.modal-card{background:var(--surface);border-radius:var(--radius);max-width:420px;width:100%;padding:24px;box-shadow:0 10px 40px rgba(0,0,0,0.2)}
+.modal-title{font-family:'Noto Serif SC',serif;font-size:18px;font-weight:600;margin-bottom:8px}
+.modal-desc{font-size:13px;color:var(--text2);margin-bottom:18px;line-height:1.6}
+.modal-input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;background:var(--bg);color:var(--text);margin-bottom:8px}
+.modal-input:focus{outline:none;border-color:var(--accent)}
+.modal-hint{font-size:11px;color:var(--text3);margin-bottom:16px;line-height:1.5}
+.modal-row{display:flex;gap:8px;justify-content:flex-end}
+.modal-btn{padding:9px 18px;border-radius:var(--radius-sm);font-size:14px;font-family:inherit;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text)}
+.modal-btn:hover{background:var(--surface2)}
+.modal-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.modal-btn.primary:hover{background:#1f4570}
+.modal-error{font-size:12px;color:var(--red);margin-top:6px;min-height:16px}
+
+/* Sync section in tomato page */
+.sync-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-top:14px}
+.sync-card-title{font-size:13px;font-weight:500;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.sync-card-desc{font-size:11px;color:var(--text3);margin-bottom:12px;line-height:1.5}
+.sync-key-display{font-family:monospace;font-size:12px;padding:6px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;margin-bottom:10px;word-break:break-all}
+.sync-row{display:flex;gap:8px;flex-wrap:wrap}
+.sync-btn{flex:1;min-width:90px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);font-size:12px;font-family:inherit;cursor:pointer;color:var(--text)}
+.sync-btn:hover{background:var(--surface2)}
 </style>
 </head>
 <body>
@@ -311,6 +349,7 @@ body{font-family:'Noto Sans SC',sans-serif;background:var(--bg);color:var(--text
     <div class="plan-header-inner">
       <div class="app-title">考研打卡 <span>·</span> 贸大应用经济学</div>
       <div class="header-right">
+        <span class="sync-status" id="syncStatus" onclick="openSyncSettings()" title="点击管理同步"><span class="sync-dot"></span><span id="syncText">未连接</span></span>
         <span class="countdown" id="countdown">距考试 — 天</span>
         <span class="phase-pill" id="phaseBadge">基础阶段</span>
       </div>
@@ -419,6 +458,12 @@ body{font-family:'Noto Sans SC',sans-serif;background:var(--bg);color:var(--text
       </div>
       <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
       <div class="backup-status" id="backupStatus"></div>
+    </div>
+
+    <div class="sync-card">
+      <div class="sync-card-title">☁️ 云端同步</div>
+      <div class="sync-card-desc">数据自动上传到云端，多设备实时同步。打卡、番茄、设置都会同步。</div>
+      <div id="syncSettingsPanel"></div>
     </div>
 
     <div class="tomato-log">
@@ -1199,6 +1244,293 @@ render();
 // Update countdown every minute
 setInterval(renderCountdown,60000);
 
+
+// ============================================================
+//  SUPABASE CLOUD SYNC
+// ============================================================
+const SUPABASE_URL = 'https://hzkzxoahiszizeihigbd.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_KVl-3q7ujhp0alp4IkxWGQ_R0toa2BI';
+
+let supabaseClient = null;
+let syncKey = localStorage.getItem('kaoyan_sync_key') || null;
+let lastSyncTime = parseInt(localStorage.getItem('kaoyan_last_sync') || '0');
+let syncDebounceTimer = null;
+let isSyncing = false;
+let isOnline = navigator.onLine;
+
+window.addEventListener('online', () => { isOnline = true; updateSyncStatus(); if(syncKey) pullFromCloud(); });
+window.addEventListener('offline', () => { isOnline = false; updateSyncStatus(); });
+
+function initSupabase(){
+  if (typeof supabase === 'undefined') {
+    console.warn('Supabase library not loaded');
+    return false;
+  }
+  if (!supabaseClient) {
+    supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  }
+  return true;
+}
+
+function updateSyncStatus(state, msg){
+  const el = document.getElementById('syncStatus');
+  const txt = document.getElementById('syncText');
+  if (!el || !txt) return;
+  el.className = 'sync-status';
+  if (!syncKey) { txt.textContent = '未连接'; return; }
+  if (!isOnline) { el.classList.add('offline'); txt.textContent = '离线'; return; }
+  if (state === 'syncing') { el.classList.add('syncing'); txt.textContent = '同步中…'; return; }
+  if (state === 'error') { el.classList.add('error'); txt.textContent = msg || '同步失败'; return; }
+  el.classList.add('synced');
+  if (lastSyncTime) {
+    const ago = Math.floor((Date.now() - lastSyncTime) / 60000);
+    txt.textContent = ago < 1 ? '已同步' : `${ago}分钟前`;
+  } else {
+    txt.textContent = '已连接';
+  }
+}
+
+function openSyncSettings(){
+  switchTab('tomato');
+  setTimeout(() => {
+    document.querySelector('.sync-card')?.scrollIntoView({behavior:'smooth', block:'center'});
+  }, 100);
+}
+
+function renderSyncSettings(){
+  const panel = document.getElementById('syncSettingsPanel');
+  if (!panel) return;
+  if (!syncKey) {
+    panel.innerHTML = `
+      <button class="sync-btn" style="width:100%;background:var(--accent);color:#fff;border-color:var(--accent);padding:10px" onclick="showSyncModal()">设置同步密钥开始使用</button>
+    `;
+  } else {
+    panel.innerHTML = `
+      <div class="sync-key-display">当前密钥：${syncKey}</div>
+      <div class="sync-row">
+        <button class="sync-btn" onclick="manualSync()">立即同步</button>
+        <button class="sync-btn" onclick="pullFromCloud(true)">从云端拉取</button>
+        <button class="sync-btn" onclick="disconnectSync()">断开同步</button>
+      </div>
+    `;
+  }
+}
+
+function showSyncModal(){
+  document.getElementById('setupModal').style.display = 'flex';
+  document.getElementById('syncKeyInput').value = syncKey || '';
+  document.getElementById('syncKeyInput').focus();
+  document.getElementById('syncKeyError').textContent = '';
+}
+
+function closeSyncModal(){
+  document.getElementById('setupModal').style.display = 'none';
+}
+
+async function connectSync(){
+  const input = document.getElementById('syncKeyInput').value.trim();
+  const errEl = document.getElementById('syncKeyError');
+  errEl.textContent = '';
+  if (input.length < 6) {
+    errEl.textContent = '密钥至少6位';
+    return;
+  }
+  if (!/^[a-zA-Z0-9_-]+$/.test(input)) {
+    errEl.textContent = '只能用字母、数字、横线、下划线';
+    return;
+  }
+  if (!initSupabase()) {
+    errEl.textContent = '同步库加载失败，请检查网络';
+    return;
+  }
+  
+  updateSyncStatus('syncing');
+  
+  try {
+    // Try to pull existing data from cloud first
+    const { data, error } = await supabaseClient
+      .from('user_data')
+      .select('*')
+      .eq('user_key', input)
+      .maybeSingle();
+    
+    if (error) throw error;
+    
+    if (data) {
+      // Existing data — ask if merge or overwrite
+      const useCloud = confirm('云端已有该密钥的数据。\n\n点击"确定"使用云端数据（会覆盖本地）。\n点击"取消"使用本地数据（会上传覆盖云端）。');
+      if (useCloud) {
+        applyCloudData(data.data);
+      } else {
+        syncKey = input;
+        localStorage.setItem('kaoyan_sync_key', syncKey);
+        await pushToCloud();
+      }
+    } else {
+      // No existing data — just save and push
+      syncKey = input;
+      localStorage.setItem('kaoyan_sync_key', syncKey);
+      await pushToCloud();
+    }
+    
+    syncKey = input;
+    localStorage.setItem('kaoyan_sync_key', syncKey);
+    lastSyncTime = Date.now();
+    localStorage.setItem('kaoyan_last_sync', lastSyncTime.toString());
+    
+    closeSyncModal();
+    renderSyncSettings();
+    updateSyncStatus();
+    render();
+    renderLog();
+    renderSubjDur();
+    
+  } catch (err) {
+    console.error(err);
+    errEl.textContent = '连接失败：' + (err.message || '未知错误');
+    updateSyncStatus('error');
+  }
+}
+
+function disconnectSync(){
+  if (!confirm('断开同步？\n\n本地数据保留，但不会再上传到云端。\n之后可以重新连接同一密钥恢复同步。')) return;
+  syncKey = null;
+  localStorage.removeItem('kaoyan_sync_key');
+  localStorage.removeItem('kaoyan_last_sync');
+  lastSyncTime = 0;
+  renderSyncSettings();
+  updateSyncStatus();
+}
+
+function applyCloudData(payload){
+  if (payload.kaoyan_app) { saved = payload.kaoyan_app; localStorage.setItem('kaoyan_app', JSON.stringify(saved)); }
+  if (payload.kaoyan_tomato_log) { tLog = payload.kaoyan_tomato_log; localStorage.setItem('kaoyan_tomato_log', JSON.stringify(tLog)); }
+  if (payload.kaoyan_subj_dur) { 
+    subjectDurations = Object.assign({math:50,eng:25,pro:45,pol:30,thesis:60,misc:25}, payload.kaoyan_subj_dur); 
+    localStorage.setItem('kaoyan_subj_dur', JSON.stringify(subjectDurations));
+  }
+}
+
+async function pushToCloud(){
+  if (!syncKey || !isOnline) return;
+  if (!initSupabase()) return;
+  
+  updateSyncStatus('syncing');
+  isSyncing = true;
+  
+  const payload = {
+    kaoyan_app: saved,
+    kaoyan_tomato_log: tLog,
+    kaoyan_subj_dur: subjectDurations,
+    client_time: Date.now(),
+  };
+  
+  try {
+    const { error } = await supabaseClient
+      .from('user_data')
+      .upsert({
+        user_key: syncKey,
+        data: payload,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'user_key' });
+    
+    if (error) throw error;
+    
+    lastSyncTime = Date.now();
+    localStorage.setItem('kaoyan_last_sync', lastSyncTime.toString());
+    updateSyncStatus();
+  } catch (err) {
+    console.error('Push failed:', err);
+    updateSyncStatus('error', '上传失败');
+  } finally {
+    isSyncing = false;
+  }
+}
+
+async function pullFromCloud(showAlert){
+  if (!syncKey || !isOnline) return;
+  if (!initSupabase()) return;
+  
+  updateSyncStatus('syncing');
+  
+  try {
+    const { data, error } = await supabaseClient
+      .from('user_data')
+      .select('*')
+      .eq('user_key', syncKey)
+      .maybeSingle();
+    
+    if (error) throw error;
+    
+    if (data && data.data) {
+      // Compare timestamps: only apply if cloud is newer than our last sync
+      const cloudTime = data.data.client_time || new Date(data.updated_at).getTime();
+      if (cloudTime > lastSyncTime || showAlert) {
+        applyCloudData(data.data);
+        render();
+        renderLog();
+        renderSubjDur();
+        if (showAlert) alert('✓ 已从云端拉取最新数据');
+      }
+    } else if (showAlert) {
+      alert('云端没有数据');
+    }
+    
+    lastSyncTime = Date.now();
+    localStorage.setItem('kaoyan_last_sync', lastSyncTime.toString());
+    updateSyncStatus();
+  } catch (err) {
+    console.error('Pull failed:', err);
+    updateSyncStatus('error', '拉取失败');
+  }
+}
+
+async function manualSync(){
+  await pushToCloud();
+}
+
+// Debounced push: called after any local change
+function schedulePush(){
+  if (!syncKey || !isOnline) return;
+  clearTimeout(syncDebounceTimer);
+  syncDebounceTimer = setTimeout(pushToCloud, 2000); // wait 2s after last change
+}
+
+// Hook into existing save functions
+const _origSave = save;
+save = function(){ _origSave(); schedulePush(); };
+
+const _origSaveTLog = saveTLog;
+saveTLog = function(){ _origSaveTLog(); schedulePush(); };
+
+const _origSaveSubjDur = saveSubjDur;
+saveSubjDur = function(){ _origSaveSubjDur(); schedulePush(); };
+
+// Init sync on load
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    if (syncKey && isOnline) {
+      initSupabase();
+      pullFromCloud();
+      // Periodic background pull every 30 seconds
+      setInterval(() => { if (!isSyncing) pullFromCloud(); }, 30000);
+    }
+    updateSyncStatus();
+    renderSyncSettings();
+  }, 500);
+});
+
+// Allow Enter key to submit modal
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && document.getElementById('setupModal')?.style.display === 'flex') {
+    connectSync();
+  }
+  if (e.key === 'Escape' && document.getElementById('setupModal')?.style.display === 'flex') {
+    closeSyncModal();
+  }
+});
+
+
 // ============================================================
 //  SERVICE WORKER REGISTRATION
 // ============================================================
@@ -1322,6 +1654,24 @@ setTimeout(maybeShowIOSHint, 1500);
 
   </div>
 </div>
+
+
+
+<!-- ====== SETUP MODAL ====== -->
+<div class="modal-overlay" id="setupModal" style="display:none">
+  <div class="modal-card">
+    <div class="modal-title">设置同步密钥</div>
+    <div class="modal-desc">设一个只有你知道的密钥，所有设备用同一个密钥就能自动同步数据。<br><strong>请务必牢记此密钥</strong>，丢失后无法找回云端数据。</div>
+    <input type="text" class="modal-input" id="syncKeyInput" placeholder="例如：cleo-kaoyan-2026" autocomplete="off">
+    <div class="modal-hint">建议：6位以上，可以包含字母、数字、横线。不要用太简单的（如 123456），那样别人猜到也能看到你的数据。</div>
+    <div class="modal-error" id="syncKeyError"></div>
+    <div class="modal-row">
+      <button class="modal-btn" onclick="closeSyncModal()">取消</button>
+      <button class="modal-btn primary" onclick="connectSync()">连接</button>
+    </div>
+  </div>
+</div>
+
 
 </body>
 </html>

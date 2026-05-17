@@ -1,5 +1,5 @@
 // Service Worker - Kaoyan Planner PWA
-const CACHE_NAME = 'kaoyan-planner-v1';
+const CACHE_NAME = 'kaoyan-planner-v2';
 const ASSETS = [
   './',
   './index.html',
