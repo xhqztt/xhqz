@@ -481,7 +481,7 @@ body{font-family:'Noto Sans SC',sans-serif;background:var(--bg);color:var(--text
 // ============================================================
 //  SHARED DATA & HELPERS
 // ============================================================
-const START = new Date(2026,4,17);
+const START = new Date(2026,5,9);
 const WEEKDAYS=['日','一','二','三','四','五','六'];
 const MONTHS=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
 
@@ -491,46 +491,65 @@ function addDays(d,n){const r=new Date(d);r.setDate(r.getDate()+n);return r}
 function fmtDate(d){return `${d.getFullYear()}年${MONTHS[d.getMonth()]}${d.getDate()}日 周${WEEKDAYS[d.getDay()]}`}
 function fmtShort(d){return `${d.getMonth()+1}/${d.getDate()}`}
 function getPhase(i){
-  if(i<56)return '基础阶段（论文+备考并行）';
-  if(i<140)return '强化阶段';
-  if(i<196)return '冲刺阶段';
+  if(i<56)return '基础阶段';
+  if(i<126)return '强化阶段';
+  if(i<175)return '冲刺阶段';
   return '押题阶段';
 }
 
 // ============================================================
 //  COURSE DATA
 // ============================================================
-const microCh=[
-  {ch:'第1-2章',topic:'供给与需求的市场力量',note:'掌握供需曲线移动的原因，价格机制'},
-  {ch:'第3章',topic:'相互依存与贸易的好处',note:'比较优势原理，生产可能性边界'},
-  {ch:'第4章',topic:'供给与需求（深化）',note:'均衡价格决定，市场出清'},
-  {ch:'第5章',topic:'弹性及其应用',note:'价格弹性、收入弹性、交叉弹性公式'},
-  {ch:'第6章',topic:'供给、需求与政府政策',note:'价格上限/下限，税收归宿'},
-  {ch:'第7章',topic:'消费者、生产者与市场效率',note:'消费者剩余与生产者剩余，帕累托效率'},
-  {ch:'第8章',topic:'税收的成本',note:'无谓损失，拉弗曲线'},
-  {ch:'第9章',topic:'国际贸易',note:'贸大重点：比较优势、进出口福利分析、贸易壁垒'},
-  {ch:'第10章',topic:'外部性',note:'科斯定理，庇古税，外部性内部化'},
-  {ch:'第11章',topic:'公共物品与公共资源',note:'搭便车问题，公地悲剧'},
-  {ch:'第12-13章',topic:'生产成本',note:'短期/长期成本曲线，规模经济 vs 范围经济'},
-  {ch:'第14章',topic:'竞争市场上的企业',note:'MR=MC利润最大化推导，完全竞争长期均衡'},
-  {ch:'第15章',topic:'垄断',note:'垄断定价，价格歧视（一/二/三级），DWL'},
-  {ch:'第16章',topic:'垄断竞争',note:'差异化产品市场，短期利润 vs 长期零利润'},
-  {ch:'第17章',topic:'寡头',note:'纳什均衡，博弈论入门，古诺模型'},
-  {ch:'第18-19章',topic:'生产要素市场',note:'劳动需求与工资决定，资本边际产品'},
+// 高鸿业微观（基础阶段建框架，前半）
+const gaoMicro=[
+  {ch:'高鸿业微观 第2章',topic:'需求、供给与均衡价格',note:'供需曲线、弹性、蛛网模型'},
+  {ch:'高鸿业微观 第3章',topic:'效用论',note:'基数/序数效用，无差异曲线，消费者均衡'},
+  {ch:'高鸿业微观 第4章',topic:'生产论',note:'生产函数，边际报酬递减，等产量线'},
+  {ch:'高鸿业微观 第5章',topic:'成本论',note:'各类成本曲线，短期/长期成本关系'},
+  {ch:'高鸿业微观 第6章',topic:'完全竞争市场',note:'厂商均衡，MR=MC，供给曲线推导'},
+  {ch:'高鸿业微观 第7章',topic:'不完全竞争市场',note:'垄断、垄断竞争、寡头定价'},
+  {ch:'高鸿业微观 第8章',topic:'生产要素价格决定',note:'要素需求与供给，工资地租利息'},
+  {ch:'高鸿业微观 第9-10章',topic:'一般均衡与市场失灵',note:'帕累托最优、外部性、公共物品'},
 ];
-const macroCh=[
-  {ch:'第12章',topic:'国民收入核算',note:'GDP/GNP区别，支出法/收入法/生产法'},
-  {ch:'第13章',topic:'简单国民收入决定',note:'凯恩斯十字，乘数效应推导'},
-  {ch:'第14章',topic:'产品市场与货币市场均衡（IS-LM）',note:'贸大核心考点：IS/LM推导，政策效果分析'},
-  {ch:'第15章',topic:'宏观经济政策分析',note:'财政政策挤出效应，货币政策传导机制'},
-  {ch:'第16章',topic:'总需求-总供给模型（AD-AS）',note:'AD-AS框架，价格粘性，供给冲击'},
-  {ch:'第17章',topic:'失业与通货膨胀',note:'菲利普斯曲线，自然失业率，滞胀'},
-  {ch:'第18章',topic:'开放经济（Mundell-Fleming）',note:'贸大必考：固定/浮动汇率下财政货币政策效果'},
-  {ch:'第19章',topic:'经济增长理论',note:'索洛模型，黄金律，内生增长理论'},
+// 平狄克微观（强化主力，815占比高，每章认真看）
+const pindyck=[
+  {ch:'平狄克 第3-4章',topic:'消费者行为与个人/市场需求',note:'815高频，效用最大化推导深入'},
+  {ch:'平狄克 第5章',topic:'不确定性与消费者行为',note:'期望效用、风险厌恶（高鸿业没有，重点）'},
+  {ch:'平狄克 第6-7章',topic:'生产与成本',note:'生产函数、成本最小化，扩展线'},
+  {ch:'平狄克 第8章',topic:'利润最大化与竞争性供给',note:'完全竞争长短期均衡'},
+  {ch:'平狄克 第9章',topic:'竞争性市场分析',note:'福利分析、价格管制、税收效应'},
+  {ch:'平狄克 第10章',topic:'市场势力：垄断与买方垄断',note:'垄断定价、价格歧视、双重加价'},
+  {ch:'平狄克 第11章',topic:'有市场势力的定价',note:'二部定价、捆绑销售（815常考）'},
+  {ch:'平狄克 第12章',topic:'垄断竞争与寡头',note:'古诺、伯特兰、斯塔克伯格模型'},
+  {ch:'平狄克 第13章',topic:'博弈论与竞争策略',note:'纳什均衡、囚徒困境、重复博弈'},
+  {ch:'平狄克 第15-16章',topic:'要素市场与一般均衡',note:'要素定价、交换效率、埃奇沃斯盒'},
+  {ch:'平狄克 第17-18章',topic:'信息不对称与外部性',note:'逆向选择、道德风险、科斯定理'},
 ];
+// 高鸿业宏观（基础阶段建框架）
+const gaoMacro=[
+  {ch:'高鸿业宏观 第12章',topic:'国民收入核算',note:'GDP核算三种方法，名义vs实际'},
+  {ch:'高鸿业宏观 第13章',topic:'简单国民收入决定',note:'凯恩斯十字，乘数效应'},
+  {ch:'高鸿业宏观 第14章',topic:'IS-LM模型',note:'贸大核心考点：IS/LM推导与移动'},
+  {ch:'高鸿业宏观 第15章',topic:'宏观经济政策',note:'财政货币政策，挤出效应'},
+  {ch:'高鸿业宏观 第16章',topic:'总需求-总供给模型',note:'AD-AS框架，价格粘性'},
+  {ch:'高鸿业宏观 第17章',topic:'失业与通货膨胀',note:'菲利普斯曲线，自然失业率'},
+  {ch:'高鸿业宏观 第18章',topic:'开放经济（Mundell-Fleming）',note:'贸大必考：固定/浮动汇率政策效果'},
+  {ch:'高鸿业宏观 第19-20章',topic:'经济增长理论',note:'索洛模型、黄金律、内生增长'},
+];
+// 多恩布什宏观（强化阶段重点章补充，不全看）
+const dornbusch=[
+  {ch:'多恩布什 第3-4章',topic:'增长与积累（重点章）',note:'索洛模型深化，配合极光讲义'},
+  {ch:'多恩布什 第5-7章',topic:'总供给与总需求（重点章）',note:'AS-AD微观基础，工资价格'},
+  {ch:'多恩布什 第10-11章',topic:'IS-LM与货币财政政策（重点章）',note:'比高鸿业更深入的政策分析'},
+  {ch:'多恩布什 第12章',topic:'开放经济下的产出（重点章）',note:'Mundell-Fleming扩展'},
+  {ch:'多恩布什 第19-20章',topic:'通胀失业与货币政策（重点章）',note:'预期、动态总供给'},
+];
+// 兼容旧引用
+const microCh=gaoMicro;
+const macroCh=gaoMacro;
 const polCh=[
-  {ch:'马原 第1章',topic:'马克思主义哲学（唯物论）',note:'肖精讲P1-30，腿姐考点清单同步标注'},
-  {ch:'马原 第2章',topic:'辩证法（矛盾、发展、联系）',note:'高频选择题来源'},
+  {ch:'马原 第1章',topic:'马克思主义哲学（唯物论）',note:'肖精讲精读，苏一思维导图理逻辑链'},
+  {ch:'马原 第2章',topic:'辩证法（矛盾、发展、联系）',note:'高频选择题来源，配苏一导图'},
   {ch:'马原 第3章',topic:'认识论与实践论',note:'实践标准，真理观'},
   {ch:'马原 第4章',topic:'唯物史观',note:'生产力与生产关系，经济基础与上层建筑'},
   {ch:'马原 第5-6章',topic:'政治经济学（剩余价值）',note:'难点，可配合徐涛视频'},
@@ -539,7 +558,7 @@ const polCh=[
   {ch:'史纲 第5-6章',topic:'社会主义建设与改革',note:'重大历史决议，改革开放节点'},
   {ch:'毛中特 第1-3章',topic:'毛泽东思想与新民主主义理论',note:'紧跟最新官方表述'},
   {ch:'毛中特 第4-7章',topic:'中国特色社会主义理论体系',note:'二十大报告关键表述必背'},
-  {ch:'毛中特 第8-10章',topic:'习近平新时代中国特色社会主义思想',note:''},
+  {ch:'毛中特 第8-10章',topic:'习近平新时代中国特色社会主义思想',note:'配苏一思维导图梳理体系'},
   {ch:'思修 第1-3章',topic:'人生观、理想信念、中国精神',note:'直接背腿姐手册主观题模板'},
   {ch:'思修 第4-6章',topic:'社会主义核心价值观与法治',note:''},
 ];
@@ -656,73 +675,94 @@ const mathLin=mathStrong36.slice(18,27);
 const mathProb=mathStrong36.slice(27);
 
 function getMath(idx){
-  // 基础阶段 idx 0-55 (约8周): 基础30讲, 每讲约2天
-  if(idx<60){
-    const ci=Math.min(Math.floor(idx/2),mathBasic30.length-1);
+  // 基础阶段 idx 0-55 (6/9-8/3): 基础30讲, 每讲约1.8天
+  if(idx<56){
+    const ci=Math.min(Math.floor(idx/1.85),mathBasic30.length-1);
     return {prefix:'张宇基础30讲',ch:mathBasic30[ci]};
   }
-  // 强化阶段 idx 60-139 (约11周): 强化36讲, 每讲约2-3天
-  if(idx<140){
-    const rel=idx-60;
-    const ci=Math.min(Math.floor(rel/2.2),mathStrong36.length-1);
+  // 强化阶段 idx 56-125 (8/4-10/12): 强化36讲, 三科滚动
+  if(idx<126){
+    const rel=idx-56;
+    const ci=Math.min(Math.floor(rel/1.94),mathStrong36.length-1);
     return {prefix:'张宇强化36讲',ch:mathStrong36[ci]};
   }
-  // 冲刺阶段 idx 140-195: 真题大全解 + 张八交替
-  if(idx<196){
-    const rel=idx-140;
-    if(rel<20){
-      // 前3周做真题
+  // 冲刺阶段 idx 126-174 (10/13-11/30): 真题大全解 + 张八
+  if(idx<175){
+    const rel=idx-126;
+    if(rel<28){
+      // 前4周做真题(2010后), 每2天1套
       const ci=Math.min(Math.floor(rel/2),mathRealExam.length-1);
       return {prefix:'真题大全解',ch:mathRealExam[ci]};
     }
     // 后续做张八
-    const ci=Math.min(Math.floor((rel-20)/4),mathZhang8.length-1);
+    const ci=Math.min(Math.floor((rel-28)/2.5),mathZhang8.length-1);
     return {prefix:'张宇8套卷',ch:mathZhang8[ci]};
   }
-  // 押题阶段 idx 196+: 张四 + 错题复盘
-  const rel=idx-196;
-  if(rel<16){
-    const ci=Math.min(Math.floor(rel/4),mathZhang4.length-1);
+  // 押题阶段 idx 175+ (12/1-考前): 张四 + 错题复盘
+  const rel=idx-175;
+  if(rel<12){
+    const ci=Math.min(Math.floor(rel/3),mathZhang4.length-1);
     return {prefix:'张宇4套卷',ch:mathZhang4[ci]};
   }
   return {prefix:'最后冲刺',ch:{ch:'错题回顾',topic:'错题本+公式手册过一遍',note:'不做新题,稳住手感'}};
 }
-function getMicro(idx){return microCh[Math.min(Math.floor(idx/3.4),microCh.length-1)]}
-function getMacro(idx){const r=idx-56;return macroCh[Math.min(Math.floor(r/10),macroCh.length-1)]}
-function getPol(idx){const r=idx-84;if(r<0)return null;return polCh[Math.min(Math.floor(r/12),polCh.length-1)]}
+// 基础阶段微观: 高鸿业微观 idx 0-27, 平狄克微观 idx 28-55
+function getProBasic(idx){
+  if(idx<28){
+    const ci=Math.min(Math.floor(idx/3.5),gaoMicro.length-1);
+    return {book:'高鸿业微观', ch:gaoMicro[ci]};
+  }
+  const ci=Math.min(Math.floor((idx-28)/2.5),pindyck.length-1);
+  return {book:'平狄克微观', ch:pindyck[ci]};
+}
+// 强化阶段宏观: 高鸿业宏观 idx 56-95, 多恩布什重点章 idx 96-125
+function getProStrong(idx){
+  const rel=idx-56;
+  if(rel<40){
+    const ci=Math.min(Math.floor(rel/5),gaoMacro.length-1);
+    return {book:'高鸿业宏观', ch:gaoMacro[ci]};
+  }
+  const ci=Math.min(Math.floor((rel-40)/6),dornbusch.length-1);
+  return {book:'多恩布什宏观', ch:dornbusch[ci]};
+}
+// 政治从 idx 67 (8/15) 启动, 每章约4-5天
+function getPol(idx){const r=idx-67;if(r<0)return null;return polCh[Math.min(Math.floor(r/4.5),polCh.length-1)]}
 
 function buildDay(idx){
   const m=getMath(idx); const sections=[];
+  // 基础阶段 idx 0-55 (6/9-8/3)
   if(idx<56){
-    const mc=getMicro(idx);
-    sections.push({tag:'thesis',label:'论文',slot:'上午 7:00–9:00',tasks:[{t:'论文写作/修改（专注2小时）',n:'优先完成，再开始备考'}]});
-    sections.push({tag:'math',label:'数学',slot:'上午 9:00–11:30',tasks:[{t:`${m.prefix} ${m.ch.ch}：${m.ch.topic}`,n:m.ch.note},{t:'当日错题记入错题本',n:''}]});
-    sections.push({tag:'pro',label:'专业课（微观）',slot:'下午 14:00–16:30',tasks:[{t:`曼昆微观 ${mc.ch}：${mc.topic}`,n:mc.note},{t:'整理笔记：核心公式与图形',n:'供需图、无差异曲线等手绘一遍加深记忆'}]});
-    sections.push({tag:'eng',label:'英语',slot:'晚上 19:30–22:00',tasks:[{t:'扇贝单词打卡（新词+复习）',n:'目标：6月15日前完成第一轮'},{t:'长难句拆解练习（每天2句）',n:'从真题阅读中摘取，分析句子结构'}]});
+    const pro=getProBasic(idx);
+    sections.push({tag:'math',label:'数学',slot:'上午 8:30–11:30',tasks:[{t:`${m.prefix} ${m.ch.ch}：${m.ch.topic}`,n:m.ch.note},{t:'1000题基础篇对应章节',n:'吃透例题，不死磕难题，证明题没思路先跳过'},{t:'当日错题记入错题本',n:''}]});
+    sections.push({tag:'pro',label:'专业课（微观）',slot:'下午 14:00–16:30',tasks:[{t:`${pro.ch.ch}：${pro.ch.topic}`,n:pro.ch.note},{t:'整理笔记：核心公式与图形',n:'供需图、无差异曲线、成本曲线手绘加深记忆'}]});
+    sections.push({tag:'eng',label:'英语',slot:'晚上 19:30–21:30',tasks:[{t:'扇贝单词打卡（新词+复习）',n:'多轮滚动，记不住的反复过'},{t:'长难句拆解练习（每天2句）',n:'从真题阅读中摘取，分析句子结构'}]});
     sections.push({tag:'misc',label:'习惯',slot:'碎片时间',tasks:[{t:'回顾当日数学笔记（15分钟）',n:'睡前过一遍，强化记忆'}]});
     return sections;
   }
-  if(idx<140){
-    const rel=idx-56; const mc2=getMacro(idx); const pc=getPol(idx);
-    sections.push({tag:'math',label:'数学',slot:'上午 7:00–9:30',tasks:[{t:`${m.prefix} ${m.ch.ch}：${m.ch.topic}`,n:m.ch.note},{t:'张宇1000题对应章节（每日10题）',n:'不翻书先做，做完再对照解析'},{t:'错题本更新',n:''}]});
-    sections.push({tag:'pro',label:'专业课（宏观）',slot:'上午 9:30–12:00',tasks:[{t:`高鸿业宏观 ${mc2.ch}：${mc2.topic}`,n:mc2.note},{t:'绘制本章核心图形',n:'IS-LM/AD-AS等手绘，贸大爱考图形分析'}]});
-    sections.push({tag:'eng',label:'英语',slot:'下午 14:00–17:00',tasks:[{t:'真题阅读精读（1篇，唐迟方法）',n:'先做题再分析，标出逻辑结构'},{t:'扇贝单词打卡（第2轮滚动）',n:''},{t:rel>=28?'翻译练习（1段）':'长难句训练（每天3句）',n:''}]});
-    if(pc){sections.push({tag:'pol',label:'政治',slot:'晚上 19:30–22:00',tasks:[{t:`肖秀荣精讲精练 ${pc.ch}：${pc.topic}`,n:pc.note},{t:'1000题对应章节刷题（每日20题）',n:'错题标记，当日复盘'},{t:'腿姐考点清单同步标注重点',n:'9月出版后启用'}]});}
-    else{sections.push({tag:'eng',label:'英语（深化）',slot:'晚上 19:30–21:30',tasks:[{t:'完型+新题型专项训练',n:'政治8月中旬前晚上强化英语'}]});}
+  // 强化阶段 idx 56-125 (8/4-10/12)
+  if(idx<126){
+    const pro=getProStrong(idx); const pc=getPol(idx);
+    sections.push({tag:'math',label:'数学',slot:'上午 8:00–11:00',tasks:[{t:`${m.prefix} ${m.ch.ch}：${m.ch.topic}`,n:m.ch.note},{t:'880/1000题强化篇对应章节',n:'不翻书先做，做完再对照解析'},{t:'每周回顾前面学过的科目',n:'高数/线代/概率滚动，别学完一科就放下'}]});
+    sections.push({tag:'pro',label:'专业课（宏观）',slot:'上午 11:00–12:30 + 下午',tasks:[{t:`${pro.ch.ch}：${pro.ch.topic}`,n:pro.ch.note},{t:'绘制本章核心图形+思维导图',n:'IS-LM/AD-AS等手绘，贸大爱考图形分析'}]});
+    sections.push({tag:'eng',label:'英语',slot:'下午 14:30–16:30',tasks:[{t:'真题阅读精读（1篇，唐迟方法）',n:'先做题再分析，标出逻辑结构与出题点'},{t:'扇贝单词打卡（滚动）',n:''}]});
+    if(pc){sections.push({tag:'pol',label:'政治',slot:'晚上 19:30–21:00',tasks:[{t:`肖秀荣精讲精练 ${pc.ch}：${pc.topic}`,n:pc.note},{t:'1000题对应章节刷题（每日20题）',n:'错题标记，当日复盘'},{t:'苏一思维导图梳理本章逻辑',n:'看完肖精讲后对照导图串知识点'}]});}
+    else{sections.push({tag:'eng',label:'英语（深化）',slot:'晚上 19:30–21:00',tasks:[{t:'完型+新题型专项训练',n:'政治8月中旬启动前，晚上强化英语'}]});}
     return sections;
   }
-  if(idx<196){
-    const rel=idx-140; const pc=getPol(idx);
-    sections.push({tag:'math',label:'数学',slot:'上午 7:00–9:30',tasks:[{t:'张宇/李林模拟卷（限时140分钟）',n:'严格计时，模拟真实考场环境'},{t:'对卷：错题分类（概念/计算/题型不熟）',n:''}]});
-    sections.push({tag:'pro',label:'专业课',slot:'上午 9:30–12:00',tasks:[{t:rel<28?'贸大历年真题精做（专业课）':'经济学核心框架背诵（思维导图）',n:rel<28?'逐题分析答题结构，归纳贸大出题偏好':'重点：IS-LM、AD-AS、索洛模型、垄断定价'},{t:'简答题/论述题训练（每日1题）',n:'限时15分钟，练答题框架'}]});
-    sections.push({tag:'eng',label:'英语',slot:'下午 14:00–16:30',tasks:[{t:'作文模板整理与背诵',n:'大作文：论说文框架；小作文：信件/备忘录格式'},{t:'翻译+阅读保温（每日1篇）',n:'不能停，保持手感'}]});
-    sections.push({tag:'pol',label:'政治',slot:'晚上 19:30–22:00',tasks:[{t:pc?`肖秀荣精讲精练 ${pc.ch}：${pc.topic}`:'肖四肖八精做（分析题答题要点）',n:pc?pc.note:''},{t:'腿姐《冲刺背诵手册》（9月出版后启用）',n:'背诵量小但准确率高'},{t:'时事政治补充（近半年热点）',n:'11月后重点补充'}]});
+  // 冲刺阶段 idx 126-174 (10/13-11/30)
+  if(idx<175){
+    const rel=idx-126; const pc=getPol(idx);
+    sections.push({tag:'math',label:'数学',slot:'上午 8:00–10:30',tasks:[{t:`${m.prefix} ${m.ch.ch}：${m.ch.topic}`,n:m.ch.note},{t:'对卷：错题分类（概念/计算/题型不熟）',n:'吃透错题胜过多刷，近三年真题留作最后模拟'}]});
+    sections.push({tag:'pro',label:'专业课',slot:'上午 10:30–12:30',tasks:[{t:rel<28?'贸大815历年真题精做':'经济学核心框架背诵（思维导图）',n:rel<28?'注意贸大已改题型：删名词解释/翻译、增简答':'重点：IS-LM、AD-AS、Mundell-Fleming、博弈论定价'},{t:'简答/论述题框架训练（每日1题）',n:'限时15分钟，815简答论述占比高'}]});
+    sections.push({tag:'eng',label:'英语',slot:'下午 14:30–16:30',tasks:[{t:'作文每周固定写+背模板',n:'经验贴最大教训：别因阅读好就松懈作文'},{t:'翻译+阅读保温（每日1篇）',n:'不能停，保持手感'}]});
+    sections.push({tag:'pol',label:'政治',slot:'晚上 19:00–21:00',tasks:[{t:pc?`肖秀荣精讲精练 ${pc.ch}：${pc.topic}`:'1000题二刷+肖八精做',n:pc?pc.note:'错题反复过'},{t:'腿姐《冲刺背诵手册》+苏一带背大题',n:'背诵量小准确率高，苏一带背理逻辑'},{t:'时事政治补充（近半年热点）',n:'11月后重点补充'}]});
     return sections;
   }
-  sections.push({tag:'math',label:'数学',slot:'上午 7:30–10:00',tasks:[{t:'错题本回顾（不做新题）',n:'重点：反复出错的题型'},{t:'公式手册每日过一遍',n:'积分公式、线代结论、概率公式'}]});
-  sections.push({tag:'pro',label:'专业课',slot:'上午 10:00–12:00',tasks:[{t:'核心概念默写确认',n:'IS-LM推导、索洛模型、垄断vs竞争比较'}]});
-  sections.push({tag:'eng',label:'英语',slot:'下午 14:00–16:00',tasks:[{t:'大作文默写+翻译练手',n:''}]});
-  sections.push({tag:'pol',label:'政治',slot:'晚上 19:30–22:00',tasks:[{t:'肖四分析题答题要点反复背',n:'坚持到最后一天'},{t:'腿姐《冲刺背诵手册》查漏补缺',n:''}]});
+  // 押题阶段 idx 175+ (12/1-考前)
+  sections.push({tag:'math',label:'数学',slot:'上午 8:30–11:00',tasks:[{t:`${m.prefix} ${m.ch.ch}：${m.ch.topic}`,n:m.ch.note},{t:'公式手册每日过一遍',n:'积分公式、线代结论、概率公式'}]});
+  sections.push({tag:'pro',label:'专业课',slot:'上午 11:00–12:30',tasks:[{t:'核心考点默写确认',n:'IS-LM推导、博弈论模型、垄断定价'},{t:'简答论述套话熟练',n:'确保考场能成文'}]});
+  sections.push({tag:'eng',label:'英语',slot:'下午 14:30–16:00',tasks:[{t:'大作文默写+翻译练手',n:'保持手感'}]});
+  sections.push({tag:'pol',label:'政治',slot:'晚上 19:00–21:00',tasks:[{t:'肖四分析题答题要点反复背',n:'坚持到最后一天'},{t:'苏一带背收尾+腿姐手册查漏',n:''}]});
   return sections;
 }
 
@@ -1143,8 +1183,8 @@ function getTagForTask(taskName){
   const t=taskName.toLowerCase();
   if(t.includes('数学')||t.includes('张宇')||t.includes('线代')||t.includes('概率')||t.includes('高数')) return 'math';
   if(t.includes('英语')||t.includes('单词')||t.includes('阅读')||t.includes('作文')||t.includes('翻译')) return 'eng';
-  if(t.includes('专业')||t.includes('微观')||t.includes('宏观')||t.includes('曼昆')||t.includes('高鸿业')||t.includes('贸大')) return 'pro';
-  if(t.includes('政治')||t.includes('肖')||t.includes('腿姐')||t.includes('马原')||t.includes('史纲')||t.includes('毛中特')||t.includes('思修')) return 'pol';
+  if(t.includes('专业')||t.includes('微观')||t.includes('宏观')||t.includes('高鸿业')||t.includes('平狄克')||t.includes('多恩布什')||t.includes('贸大')||t.includes('815')) return 'pro';
+  if(t.includes('政治')||t.includes('肖')||t.includes('腿姐')||t.includes('苏一')||t.includes('马原')||t.includes('史纲')||t.includes('毛中特')||t.includes('思修')) return 'pol';
   if(t.includes('论文')) return 'thesis';
   return 'misc';
 }
@@ -1234,7 +1274,7 @@ function renderBarChart(){
   } else {
     // All: group by week
     title.textContent='各周番茄总数';
-    const START_DAY=new Date(2026,4,17);
+    const START_DAY=new Date(2026,5,9);
     const weeks=Math.ceil((today-START_DAY)/86400000/7)+1;
     for(let w=0;w<Math.min(weeks,30);w++){
       const wStart=addDays(START_DAY,w*7);
@@ -1281,7 +1321,7 @@ function renderSubjectBars(log){
 function renderHeatmap(){
   // Always show full timeline heatmap regardless of period filter
   const today=new Date();
-  const START_HEAT=new Date(2026,4,17);
+  const START_HEAT=new Date(2026,5,9);
   const totalDays=Math.ceil((today-START_HEAT)/86400000)+1;
 
   // Build count map
